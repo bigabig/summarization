@@ -1,0 +1,87 @@
+version: '3.6'
+services:
+
+  postgres:
+    image: postgres:12
+    # restart: always
+    volumes:
+    - postgres_data:/var/lib/postgresql/data
+    - ./init-user-db.sh:/docker-entrypoint-initdb.d/init-user-db.sh
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+
+#  postgres_admin:
+#    image: dpage/pgadmin4
+#    ports:
+#      - "80:80"
+#    volumes:
+#      - pgadmin-data:/var/lib/pgadmin
+#    links:
+#      - "postgres:postgres-server"
+#    environment:
+#      PGADMIN_DEFAULT_EMAIL: "tim.s.fischer96@gmail.com"
+#      PGADMIN_DEFAULT_PASSWORD: "password"
+#      PGADMIN_LISTEN_PORT: 80
+#    depends_on:
+#      - "postgres"
+
+  phppgadmin:
+    image: 'docker.io/bitnami/phppgadmin:7-debian-10'
+    ports:
+      - '81:8080'
+      - '443:8443'
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_HOST: postgres
+      DATABASE_PORT_NUMBER: 5432
+
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:12.0.1
+    ports:
+      - "8888:8080"
+    depends_on:
+      - "postgres"
+    volumes:
+      - ./hasura-event-listener.jar:/opt/jboss/keycloak/standalone/deployments/hasura-event-listener.jar
+    environment:
+      DB_VENDOR: POSTGRES
+      DB_ADDR: postgres
+      DB_DATABASE: keycloak
+      DB_SCHEMA: public
+      DB_USER: keycloak
+      DB_PASSWORD: keycloak
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin
+      HASURA_ADMIN_SECRET: myadminsecretkey
+      HASURA_ENDPOINT: http://hasura:8080/v1/graphql
+
+  hasura:
+    image: hasura/graphql-engine:v1.3.3
+    ports:
+      - "8080:8080"
+    depends_on:
+      - "postgres"
+      - "keycloak"
+    restart: always
+    environment:
+      HASURA_GRAPHQL_DATABASE_URL: postgres://postgres:postgrespassword@postgres:5432/postgres
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "true" # set to "false" to disable console
+      HASURA_GRAPHQL_DEV_MODE: "true"
+      HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
+      HASURA_GRAPHQL_ADMIN_SECRET: myadminsecretkey
+      # find jwks uri here: http://localhost:8888/auth/realms/myrealm/.well-known/openid-configuration
+      HASURA_GRAPHQL_JWT_SECRET: '{"jwk_url": "http://keycloak:8080/auth/realms/myrealm/protocol/openid-connect/certs","claims_namespace_path":"$$","claims_format":"json"}'
+
+volumes:
+  postgres_data:
+#  db_data:
+  pgadmin-data:

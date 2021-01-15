@@ -1,0 +1,94 @@
+#account-dropdown {
+    display: inline-block;
+    padding-top: .3125rem;
+    padding-bottom: .3125rem;
+    margin-right: 1rem;
+    font-size: 1.25rem;
+    line-height: inherit;
+    white-space: nowrap;
+}
+
+body {
+    font: 14px "Century Gothic", Futura, sans-serif;
+    margin: 0;
+}
+
+ol, ul {
+    padding-left: 30px;
+}
+
+.no-border-radius {
+    border-radius: 0 !important;
+}
+
+.test {
+    height: 100px;
+    max-height: 100px;
+}
+
+.board-row:after {
+    clear: both;
+    content: "";
+    display: table;
+}
+
+.status {
+    margin-bottom: 10px;
+}
+
+.square {
+    background: #fff;
+    border: 1px solid #999;
+    float: left;
+    font-size: 24px;
+    font-weight: bold;
+    line-height: 34px;
+    height: 34px;
+    margin-right: -1px;
+    margin-top: -1px;
+    padding: 0;
+    text-align: center;
+    width: 34px;
+}
+
+.square:focus {
+    outline: none;
+}
+
+.kbd-navigation .square:focus {
+    background: #ddd;
+}
+
+.game {
+    display: flex;
+    flex-direction: row;
+}
+
+.game-info {
+    margin-left: 20px;
+}
+
+.gutter {
+    flex-shrink: 0;
+    background-image: linear-gradient(to bottom, #333 15%, rgba(255, 255, 255, 0) 0%);
+    background-position: center;
+    background-size: 1px 10px;
+    background-repeat: repeat-y;
+}
+
+.gutter-horizontal {
+    cursor: ew-resize;
+}
+
+.gutter-vertical {
+    cursor: ns-resize;
+}
+.comp {
+    /*background: red;*/
+    color: white;
+    height: 100%;
+    display: inline-block;
+}
+.wrap {
+    display: flex;
+}

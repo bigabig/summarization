@@ -1,0 +1,224 @@
+{
+  "version": 2,
+  "tables": [
+    {
+      "table": {
+        "schema": "public",
+        "name": "files"
+      },
+      "object_relationships": [
+        {
+          "name": "project",
+          "using": {
+            "foreign_key_constraint_on": "project_id"
+          }
+        }
+      ],
+      "insert_permissions": [
+        {
+          "role": "user",
+          "permission": {
+            "check": {
+              "project": {
+                "user_id": {
+                  "_eq": "X-Hasura-User-Id"
+                }
+              }
+            },
+            "columns": [
+              "content",
+              "name",
+              "project_id"
+            ],
+            "backend_only": false
+          }
+        }
+      ],
+      "select_permissions": [
+        {
+          "role": "user",
+          "permission": {
+            "columns": [
+              "content",
+              "created_at",
+              "graph_data",
+              "graph_up_to_date",
+              "id",
+              "name",
+              "project_id",
+              "summary_content",
+              "summary_up_to_date",
+              "updated_at"
+            ],
+            "filter": {
+              "project": {
+                "user_id": {
+                  "_eq": "X-Hasura-User-Id"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "update_permissions": [
+        {
+          "role": "user",
+          "permission": {
+            "columns": [
+              "content",
+              "graph_data",
+              "graph_up_to_date",
+              "name",
+              "summary_content",
+              "summary_up_to_date"
+            ],
+            "filter": {
+              "project": {
+                "user_id": {
+                  "_eq": "X-Hasura-User-Id"
+                }
+              }
+            },
+            "check": null
+          }
+        }
+      ],
+      "delete_permissions": [
+        {
+          "role": "user",
+          "permission": {
+            "filter": {
+              "project": {
+                "user_id": {
+                  "_eq": "X-Hasura-User-Id"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "table": {
+        "schema": "public",
+        "name": "projects"
+      },
+      "object_relationships": [
+        {
+          "name": "user",
+          "using": {
+            "foreign_key_constraint_on": "user_id"
+          }
+        }
+      ],
+      "array_relationships": [
+        {
+          "name": "files",
+          "using": {
+            "foreign_key_constraint_on": {
+              "column": "project_id",
+              "table": {
+                "schema": "public",
+                "name": "files"
+              }
+            }
+          }
+        }
+      ],
+      "insert_permissions": [
+        {
+          "role": "user",
+          "permission": {
+            "check": {
+              "user_id": {
+                "_eq": "X-Hasura-User-Id"
+              }
+            },
+            "set": {
+              "user_id": "x-hasura-User-Id"
+            },
+            "columns": [
+              "name"
+            ],
+            "backend_only": false
+          }
+        }
+      ],
+      "select_permissions": [
+        {
+          "role": "user",
+          "permission": {
+            "columns": [
+              "created_at",
+              "graph_data",
+              "graph_up_to_date",
+              "id",
+              "name",
+              "summary_content",
+              "summary_up_to_date",
+              "updated_at",
+              "user_id"
+            ],
+            "filter": {
+              "user_id": {
+                "_eq": "X-Hasura-User-Id"
+              }
+            }
+          }
+        }
+      ],
+      "update_permissions": [
+        {
+          "role": "user",
+          "permission": {
+            "columns": [
+              "graph_data",
+              "graph_up_to_date",
+              "name",
+              "summary_content",
+              "summary_up_to_date"
+            ],
+            "filter": {
+              "user_id": {
+                "_eq": "X-Hasura-User-Id"
+              }
+            },
+            "check": null
+          }
+        }
+      ],
+      "delete_permissions": [
+        {
+          "role": "user",
+          "permission": {
+            "filter": {
+              "user_id": {
+                "_eq": "X-Hasura-User-Id"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "table": {
+        "schema": "public",
+        "name": "users"
+      },
+      "array_relationships": [
+        {
+          "name": "projects",
+          "using": {
+            "foreign_key_constraint_on": {
+              "column": "user_id",
+              "table": {
+                "schema": "public",
+                "name": "projects"
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
