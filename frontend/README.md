@@ -58,6 +58,12 @@ npm install @apollo/client graphql
 ```
 npm install -g apollo-codegen
 apollo-codegen introspect-schema http://localhost:8080/v1/graphql --output schema.json --header "x-hasura-admin-secret: myadminsecretkey"
-apollo-codegen generate ./src/features/projects/graphql/projectsGraphQL.tsx --schema schema.json --target typescript --output ./src/features/projects/types/projects-generated-types.ts
-apollo-codegen generate ./src/features/files/graphql/filesGraphQL.ts --schema schema.json --target typescript --output ./src/features/files/types/files-generated-types.ts
+apollo-codegen generate ./src/graphql/projects.ts --schema schema.json --target typescript --output ./src/graphql/types/projects-generated-types.ts
+apollo-codegen generate ./src/graphql/files.ts --schema schema.json --target typescript --output ./src/graphql/types/files-generated-types.ts
+
+summary_annotation_data: any -> summary_annotation_data: MyAnnotationData
+summary_alignment_data: any -> summary_alignment_data: MyAlignmentData
+summary_triple_data: any -> summary_triple_data: MyTriplesData 
+triple_data: any -> triple_data: MyTriplesData 
+
 ```

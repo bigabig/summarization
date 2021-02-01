@@ -52,6 +52,9 @@ services:
       - "postgres"
     volumes:
       - ./hasura-event-listener.jar:/opt/jboss/keycloak/standalone/deployments/hasura-event-listener.jar
+      - ./themes/:/opt/jboss/keycloak/themes/
+      - ./standalone.xml:/opt/jboss/keycloak/standalone/configuration/standalone.xml
+      - ./standalone-ha.xml:/opt/jboss/keycloak/standalone/configuration/standalone-ha.xml
     environment:
       DB_VENDOR: POSTGRES
       DB_ADDR: postgres

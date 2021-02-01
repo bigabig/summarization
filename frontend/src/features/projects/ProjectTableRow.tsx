@@ -1,7 +1,7 @@
 import React from "react";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import {useDeleteProject, useGetProjectById } from "./graphql/projectsGraphQL";
+import {useDeleteProject, useGetProjectById } from "../../graphql/projects";
 import RenameProjectForm from "./RenameProjectForm";
 
 type ProjectTableRowProps = {

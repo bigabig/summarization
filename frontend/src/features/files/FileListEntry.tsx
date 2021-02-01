@@ -1,35 +1,37 @@
 import Dropdown from "react-bootstrap/Dropdown";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
-import Button from "react-bootstrap/Button";
 import React from "react";
-import {useDeleteFile, useGetFileById} from "./graphql/filesGraphQL";
-import {GlobalEditorState} from "../editor/Editor";
+import {useDeleteFile, useGetFileById} from "../../graphql/files";
 import RenameFileForm, {RenameFileFormMode} from "./RenameFileForm";
+import {NavLink, useHistory, useRouteMatch} from "react-router-dom";
+import {ProjectMatch} from "../../graphql/types/ProjectMatch";
 
 type FileListEntryProps = {
     fileId: number,
-    editorState: GlobalEditorState
 }
 
-function FileListEntry({ fileId, editorState }: FileListEntryProps) {
+function FileListEntry({ fileId }: FileListEntryProps) {
+    // global url state
+    const match = useRouteMatch<ProjectMatch>();
+    const projectId: number = Number(match.params.projectId);
+
+    const {push} = useHistory();
+
     // remote state
-    const { loading, error, data } = useGetFileById(fileId)
+    const { loading, error, data } = useGetFileById(fileId, projectId)
 
     // remote actions
-    const { loading: deleteLoading, mutate: deleteFile} = useDeleteFile(editorState.state.projectId)
+    const { loading: deleteLoading, mutate: deleteFile} = useDeleteFile(projectId)
 
     // ui actions
-    const handleSelect = () => {
-        editorState.setState({...editorState.state, fileId})
-    }
     const handleDelete = () => {
-        deleteFile({ variables: { id: fileId } })
+        deleteFile({ variables: { id: fileId, projectId: projectId } })
             .then(result => {
                 if(!result.data?.delete_files_by_pk?.id) {
                     alert("Error while deleting file with id " + fileId)
                 } else {
-                    // update editor state, as the file does not exist anymore!
-                    editorState.setState({...editorState.state, fileId: undefined})
+                    // go to no file selected
+                    push(`/project/${projectId}`)
                 }
             })
             .catch(error => {
@@ -53,10 +55,12 @@ function FileListEntry({ fileId, editorState }: FileListEntryProps) {
     } else {
         return (
             <Dropdown as={ButtonGroup} className="w-100">
-                <Button variant="secondary" className="no-border-radius" block active={editorState.state.fileId === fileId} onClick={handleSelect}>{data.files_by_pk.name}</Button>
-                <Dropdown.Toggle split variant="secondary" id="dropdown-split-basic" className="no-border-radius" active={editorState.state.fileId === fileId}/>
+                <NavLink to={`/project/${projectId}/file/${fileId}`} className={"no-border-radius btn btn-secondary btn-block"}>
+                    {data.files_by_pk.name}
+                </NavLink>
+                <Dropdown.Toggle split variant="light" id="dropdown-split-basic" className="no-border-radius" />
                 <Dropdown.Menu>
-                    <RenameFileForm fileId={fileId} mode={RenameFileFormMode.Dropdown} />
+                    <RenameFileForm mode={RenameFileFormMode.Dropdown} fileId={fileId} />
                     <Dropdown.Item eventKey="2" onClick={handleDelete} disabled={deleteLoading}>Delete</Dropdown.Item>
                 </Dropdown.Menu>
             </Dropdown>

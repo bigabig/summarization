@@ -2,7 +2,7 @@ import React from "react";
 import Table from "react-bootstrap/Table";
 import Form from "react-bootstrap/Form";
 import ProjectTableRow from "./ProjectTableRow";
-import {useGetAllProjects} from "./graphql/projectsGraphQL";
+import {useGetAllProjects} from "../../graphql/projects";
 
 type ProjectTableProps = {
     searchString: string

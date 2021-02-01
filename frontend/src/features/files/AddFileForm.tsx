@@ -10,24 +10,45 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Nav from "react-bootstrap/Nav";
 import Form from "react-bootstrap/Form";
-import {useAddFile} from "./graphql/filesGraphQL";
-import {GlobalEditorState} from "../editor/Editor";
+import {useAddFile} from "../../graphql/files";
+import axios from 'axios';
+import Spinner from "react-bootstrap/esm/Spinner";
+import {useRouteMatch} from "react-router-dom";
+import {ProjectMatch} from "../../graphql/types/ProjectMatch";
 
-type AddFileFormProps = {
-    editorState: GlobalEditorState
+function isValidHttpUrl(string: string) {
+    let url;
+    try {
+        url = new URL(string);
+    } catch (_) {
+        return false;
+    }
+    return url.protocol === "http:" || url.protocol === "https:";
 }
 
-function AddFileForm({ editorState }: AddFileFormProps) {
+function AddFileForm() {
+    const match = useRouteMatch<ProjectMatch>();
+    const projectId: number = Number(match.params.projectId);
+
     const ModalBodyStyle: CSSProperties = {
         fontSize: '1rem',
     }
 
     // local state
-    const [fileName, setFileName] = useState("");
     const [show, setShow] = useState(false);
 
+    const [fileName, setFileName] = useState("");
+
+    const [uploadFileName, setUploadFileName] = useState("");
+    const [uploadFile, setUploadFile] = useState<File | undefined>(undefined);
+    const [uploadLoading, setUploadLoading] = useState(false);
+
+    const [extractURL, setExtractURL] = useState("");
+    const [extractFileName, setExtractFileName] = useState("");
+    const [extractLoading, setExtractLoading] = useState(false);
+
     // remote actions
-    const {mutate: addFile, loading: addLoading, error: addError } = useAddFile(editorState.state.projectId)
+    const {mutate: addFile, loading: addLoading, error: addError } = useAddFile(Number(projectId))
 
     // actions
     const handleAddFile = () => {
@@ -35,13 +56,66 @@ function AddFileForm({ editorState }: AddFileFormProps) {
             variables: {
                 name: fileName,
                 content: '',
-                project_id: editorState.state.projectId
+                project_id: Number(projectId)
             }
         }).then(_ => {
             setFileName('');
             setShow(false);
         });
     };
+    const handleUploadFile = () => {
+        if (uploadFile) {
+            setUploadLoading(true);
+            const data = new FormData();
+            data.append('file', uploadFile)
+            axios.post("http://localhost:3333/upload", data).then(result => {
+                if (result?.data?.text) {
+                    addFile({
+                        variables: {
+                            name: uploadFileName,
+                            content: result.data.text.reduce((previousValue: string, currentValue: string) => previousValue + "\n" + currentValue, "").trim(),
+                            project_id: Number(projectId)
+                        }
+                    }).then(_ => {
+                        setUploadFileName('');
+                        setUploadFile(undefined);
+                        setShow(false);
+                    })
+                } else {
+                    throw new Error("An error occurred during text extraction.")
+                }
+            }).catch(error => {
+                alert(error);
+            }).finally(() => {
+                setUploadLoading(false);
+            })
+        }
+    }
+    const handleExtractURL = () => {
+        setExtractLoading(true);
+        axios.post("http://localhost:3333/extract", {url: extractURL}).then(result => {
+            if (result?.data?.text) {
+                addFile({
+                    variables: {
+                        name: extractFileName,
+                        content: result.data.text.reduce((previousValue: string, currentValue: string) => previousValue + "\n" + currentValue, "").trim(),
+                        project_id: Number(projectId)
+                    }
+                }).then(_ => {
+                    setExtractFileName('');
+                    setExtractURL('');
+                    setShow(false);
+                })
+            } else {
+                alert("Extraction result is malformed!")
+            }
+        }).catch(error => {
+            alert(error.response.status + ": " + error.response.data.message)
+        }).finally(() => {
+            setExtractLoading(false);
+        })
+    }
+
 
     // ui actions
     const handleClose = () => setShow(false);
@@ -49,8 +123,28 @@ function AddFileForm({ editorState }: AddFileFormProps) {
     const handleFileNameChange = (event: ChangeEvent<HTMLInputElement>) => {
         setFileName(event.target.value)
     }
+    const handleUploadFileNameChange = (event: ChangeEvent<HTMLInputElement>) => {
+        setUploadFileName(event.target.value)
+    }
+    const handleFileSelect = (event: ChangeEvent<HTMLInputElement>) => {
+        console.log(event.target.files?.[0])
+        setUploadFile(event.target.files?.[0])
+    }
+    const handleExtractFileNameChange = (event: ChangeEvent<HTMLInputElement>) => {
+        setExtractFileName(event.target.value)
+    }
+    const handleExtractURLChange = (event: ChangeEvent<HTMLInputElement>) => {
+        setExtractURL(event.target.value)
+    }
 
     // view
+    const checkUploadDisabled = () => {
+        return !(!uploadLoading && uploadFileName.length > 0 && uploadFile !== undefined && uploadFileName.endsWith(".txt") && (uploadFile.name.endsWith(".txt") || uploadFile.name.endsWith(".pdf")))
+    }
+    const checkExtractDisabled = () => {
+        return !(!extractLoading && extractFileName.length > 0 && extractFileName.endsWith(".txt") && extractURL.length > 0 && isValidHttpUrl(extractURL))
+    }
+
     return (
         <>
             <OverlayTrigger transition={false} placement="right" overlay={<Tooltip id="tooltip-add-file">Add a new file</Tooltip>}>
@@ -81,6 +175,7 @@ function AddFileForm({ editorState }: AddFileFormProps) {
                             </Col>
                             <Col sm={9}>
                                 <Tab.Content>
+
                                     <Tab.Pane eventKey="new">
                                         <Form>
                                             <Form.Group controlId="formFileName">
@@ -94,32 +189,38 @@ function AddFileForm({ editorState }: AddFileFormProps) {
                                             </Form.Group>
                                         </Form>
                                     </Tab.Pane>
+
                                     <Tab.Pane eventKey="upload">
                                         <Form>
                                             <Form.File id="formcheck-api-regular" className="mb-4">
                                                 <Form.File.Label>Upload File (*.txt or *.pdf)</Form.File.Label>
-                                                <Form.File.Input />
+                                                <Form.File.Input onChange={handleFileSelect} disabled={uploadLoading}/>
                                             </Form.File>
                                             <Form.Group controlId="formUploadFileId">
                                                 <Form.Label>File Name in this project (*.txt)</Form.Label>
-                                                <Form.Control type="text" placeholder="Enter file name" />
-                                                <Form.Text className="text-danger">
-                                                    File already exists! Please choose another file name.
-                                                </Form.Text>
+                                                <Form.Control type="text" placeholder="Enter file name" value={uploadFileName} onChange={handleUploadFileNameChange}  disabled={uploadLoading}/>
+                                                {addError && (
+                                                    <Form.Text className="text-danger">
+                                                        {addError.message}
+                                                    </Form.Text>
+                                                )}
                                             </Form.Group>
                                         </Form>
                                     </Tab.Pane>
+
                                     <Tab.Pane eventKey="website">
                                         <Form.Group controlId="formUrlId" className="mb-4">
                                             <Form.Label>URL to extract content from (https://...)</Form.Label>
-                                            <Form.Control type="text" placeholder="https://www.example.com/" />
+                                            <Form.Control type="text" placeholder="https://www.example.com/" value={extractURL} onChange={handleExtractURLChange} disabled={extractLoading}/>
                                         </Form.Group>
                                         <Form.Group controlId="formUrlFileName">
                                             <Form.Label>File Name in this project (*.txt)</Form.Label>
-                                            <Form.Control type="text" placeholder="example.txt" />
-                                            <Form.Text className="text-danger">
-                                                File already exists! Please choose another file name.
-                                            </Form.Text>
+                                            <Form.Control type="text" placeholder="example.txt" value={extractFileName} onChange={handleExtractFileNameChange} disabled={extractLoading}/>
+                                            {addError && (
+                                                <Form.Text className="text-danger">
+                                                    {addError.message}
+                                                </Form.Text>
+                                            )}
                                         </Form.Group>
                                     </Tab.Pane>
                                 </Tab.Content>
@@ -131,21 +232,45 @@ function AddFileForm({ editorState }: AddFileFormProps) {
                             Close
                         </Button>
                         <Tab.Content>
+
                             <Tab.Pane eventKey="new">
-                                <Button variant="success" onClick={handleAddFile} disabled={addLoading || fileName.length === 0}>
+                                <Button variant="success" onClick={handleAddFile} disabled={addLoading || fileName.length === 0 || !fileName.endsWith(".txt")}>
                                     Create
                                 </Button>
                             </Tab.Pane>
+
                             <Tab.Pane eventKey="upload">
-                                <Button variant="success" onClick={handleClose}>
+                                <Button variant="success" onClick={handleUploadFile} disabled={checkUploadDisabled()}>
+                                    {uploadLoading && (
+                                        <Spinner
+                                            style={{marginRight: "8px"}}
+                                            as="span"
+                                            animation="border"
+                                            size="sm"
+                                            role="status"
+                                            aria-hidden="true"
+                                        />
+                                    )}
                                     Upload & Create
                                 </Button>
                             </Tab.Pane>
+
                             <Tab.Pane eventKey="website">
-                                <Button variant="success" onClick={handleClose}>
+                                <Button variant="success" onClick={handleExtractURL} disabled={checkExtractDisabled()}>
+                                    {extractLoading && (
+                                        <Spinner
+                                            style={{marginRight: "8px"}}
+                                            as="span"
+                                            animation="border"
+                                            size="sm"
+                                            role="status"
+                                            aria-hidden="true"
+                                        />
+                                    )}
                                     Extract & Create
                                 </Button>
                             </Tab.Pane>
+
                         </Tab.Content>
                     </Modal.Footer>
                 </Tab.Container>

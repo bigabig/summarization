@@ -85,10 +85,104 @@ ol, ul {
 }
 .comp {
     /*background: red;*/
-    color: white;
+    /*color: white;*/
     height: 100%;
     display: inline-block;
 }
 .wrap {
     display: flex;
+}
+
+.entities {
+    line-height: 2;
+}
+
+[data-entity] {
+    padding: 0.25em 0.35em;
+    margin: 0px 0.25em;
+    line-height: 1;
+    display: inline-block;
+    border-radius: 0.25em;
+    border: 1px solid;
+}
+
+[data-entity]::after {
+    box-sizing: border-box;
+    content: attr(data-entity);
+    font-size: 0.6em;
+    line-height: 1;
+    padding: 0.35em;
+    border-radius: 0.35em;
+    text-transform: uppercase;
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0px 0px 0.1rem 0.5rem;
+}
+
+[data-entity][data-entity="person"] {
+    background: rgba(166, 226, 45, 0.2);
+    border-color: rgb(166, 226, 45);
+}
+
+[data-entity][data-entity="person"]::after {
+    background: rgb(166, 226, 45);
+}
+
+[data-entity][data-entity="org"] {
+    background: rgba(67, 198, 252, 0.2);
+    border-color: rgb(67, 198, 252);
+}
+
+[data-entity][data-entity="org"]::after {
+    background: rgb(67, 198, 252);
+}
+
+[data-entity][data-entity="date"] {
+    background: rgba(47, 187, 171, 0.2);
+    border-color: rgb(47, 187, 171);
+}
+
+[data-entity][data-entity="date"]::after {
+    background: rgb(47, 187, 171);
+}
+
+/*.annotationContainer {*/
+/*    font: 12px/normal 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;*/
+/*    line-height: 1.5;*/
+/*    color: #61a5ea;*/
+/*    padding: 0.5rem;*/
+/*}*/
+
+.textContainer {
+    scroll-behavior: smooth;
+    position: relative;
+    overflow: auto;
+    width:100%;
+    height:100%;
+    padding: 0;
+    font-style: normal;
+    font-variant-ligatures: normal;
+    font-variant-caps: normal;
+    font-variant-numeric: normal;
+    font-variant-east-asian: normal;
+    font-weight: normal;
+    font-stretch: normal;
+    font-size: 20px;
+    line-height: normal;
+    font-family: Monaco, Menlo, "Ubuntu Mono", Consolas, source-code-pro, monospace;
+    direction: ltr;
+    text-align: left;
+}
+
+.summary-sentence {
+    cursor: pointer;
+}
+
+[data-entity][data-entity="v"] {
+    cursor: pointer;
+}
+
+[data-entity][data-entity="v"].active-verb {
+    background: rgba(220, 10, 10, 0.75);
+    border-color: red;
 }

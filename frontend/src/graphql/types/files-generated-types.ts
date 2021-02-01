@@ -7,8 +7,14 @@
 // GraphQL query operation: GetAllFiles
 // ====================================================
 
+import {MyAnnotationData, MyTriplesData} from "./annotations";
+import {MyAlignmentData} from "./alignments";
+
 export interface GetAllFiles_files {
+  annotation_data: any | null;
+  annotation_up_to_date: boolean;
   content: string;
+  sentences: string[] | null;
   created_at: any;
   graph_data: any;
   graph_up_to_date: boolean;
@@ -17,6 +23,11 @@ export interface GetAllFiles_files {
   project_id: number;
   summary_content: string | null;
   summary_up_to_date: boolean;
+  summary_annotation_data: MyAnnotationData | null;
+  summary_alignment_data: MyAlignmentData | null;
+  summary_triple_data: MyTriplesData | null;
+  summary_sentences: string[] | null;
+  triple_data: MyTriplesData | null;
   updated_at: any;
 }
 
@@ -33,7 +44,10 @@ export interface GetAllFiles {
 // ====================================================
 
 export interface GetFileById_files_by_pk {
+  annotation_data: any | null;
+  annotation_up_to_date: boolean;
   content: string;
+  sentences: string[] | null;
   created_at: any;
   graph_data: any;
   graph_up_to_date: boolean;
@@ -42,6 +56,11 @@ export interface GetFileById_files_by_pk {
   project_id: number;
   summary_content: string | null;
   summary_up_to_date: boolean;
+  summary_annotation_data: MyAnnotationData | null;
+  summary_alignment_data: MyAlignmentData | null;
+  summary_triple_data: MyTriplesData | null;
+  summary_sentences: string[] | null;
+  triple_data: MyTriplesData | null;
   updated_at: any;
 }
 
@@ -51,6 +70,7 @@ export interface GetFileById {
 
 export interface GetFileByIdVariables {
   id: number;
+  projectId: number;
 }
 
 
@@ -62,7 +82,10 @@ export interface GetFileByIdVariables {
 // ====================================================
 
 export interface GetFilesByProjectId_files {
+  annotation_data: any | null;
+  annotation_up_to_date: boolean;
   content: string;
+  sentences: string[] | null;
   created_at: any;
   graph_data: any;
   graph_up_to_date: boolean;
@@ -71,6 +94,11 @@ export interface GetFilesByProjectId_files {
   project_id: number;
   summary_content: string | null;
   summary_up_to_date: boolean;
+  summary_annotation_data: MyAnnotationData | null;
+  summary_alignment_data: MyAlignmentData | null;
+  summary_triple_data: MyTriplesData | null;
+  summary_sentences: string[] | null;
+  triple_data: MyTriplesData | null;
   updated_at: any;
 }
 
@@ -91,7 +119,10 @@ export interface GetFilesByProjectIdVariables {
 // ====================================================
 
 export interface AddFile_insert_files_one {
+  annotation_data: any | null;
+  annotation_up_to_date: boolean;
   content: string;
+  sentences: string[] | null;
   created_at: any;
   graph_data: any;
   graph_up_to_date: boolean;
@@ -100,6 +131,11 @@ export interface AddFile_insert_files_one {
   project_id: number;
   summary_content: string | null;
   summary_up_to_date: boolean;
+  summary_annotation_data: MyAnnotationData | null;
+  summary_alignment_data: MyAlignmentData | null;
+  summary_triple_data: MyTriplesData | null;
+  summary_sentences: string[] | null;
+  triple_data: MyTriplesData | null;
   updated_at: any;
 }
 
@@ -122,7 +158,10 @@ export interface AddFileVariables {
 // ====================================================
 
 export interface UpdateFile_update_files_by_pk {
+  annotation_data: any | null;
+  annotation_up_to_date: boolean;
   content: string;
+  sentences: string[] | null;
   created_at: any;
   graph_data: any;
   graph_up_to_date: boolean;
@@ -131,6 +170,11 @@ export interface UpdateFile_update_files_by_pk {
   project_id: number;
   summary_content: string | null;
   summary_up_to_date: boolean;
+  summary_annotation_data: MyAnnotationData | null;
+  summary_alignment_data: MyAlignmentData | null;
+  summary_triple_data: MyTriplesData | null;
+  summary_sentences: string[] | null;
+  triple_data: MyTriplesData | null;
   updated_at: any;
 }
 
@@ -140,8 +184,52 @@ export interface UpdateFile {
 
 export interface UpdateFileVariables {
   id: number;
+  projectId: number;
   content?: string | null;
   name?: string | null;
+}
+
+
+/* tslint:disable */
+// This file was automatically generated and should not be edited.
+
+// ====================================================
+// GraphQL mutation operation: UpdateSummary
+// ====================================================
+
+export interface UpdateSummary_update_files_by_pk {
+  annotation_data: any | null;
+  annotation_up_to_date: boolean;
+  content: string;
+  sentences: string[] | null;
+  created_at: any;
+  graph_data: any;
+  graph_up_to_date: boolean;
+  id: number;
+  name: string;
+  project_id: number;
+  summary_content: string | null;
+  summary_up_to_date: boolean;
+  summary_annotation_data: MyAnnotationData | null;
+  summary_alignment_data: MyAlignmentData | null;
+  summary_triple_data: MyTriplesData | null;
+  summary_sentences: string[] | null;
+  triple_data: MyTriplesData | null;
+  updated_at: any;
+}
+
+export interface UpdateSummary {
+  update_files_by_pk: UpdateSummary_update_files_by_pk | null;  // update single row of the table: "files"
+}
+
+export interface UpdateSummaryVariables {
+  id: number;
+  projectId: number;
+  summary_content?: string | null;
+  summary_annotation_data?: any | null;
+  summary_alignment_data?: any | null;
+  summary_triple_data?: any | null;
+  summary_sentences?: any | null;
 }
 
 
@@ -153,7 +241,10 @@ export interface UpdateFileVariables {
 // ====================================================
 
 export interface RenameFile_update_files_by_pk {
+  annotation_data: any | null;
+  annotation_up_to_date: boolean;
   content: string;
+  sentences: string[] | null;
   created_at: any;
   graph_data: any;
   graph_up_to_date: boolean;
@@ -162,6 +253,11 @@ export interface RenameFile_update_files_by_pk {
   project_id: number;
   summary_content: string | null;
   summary_up_to_date: boolean;
+  summary_annotation_data: MyAnnotationData | null;
+  summary_alignment_data: MyAlignmentData | null;
+  summary_triple_data: MyTriplesData | null;
+  summary_sentences: string[] | null;
+  triple_data: MyTriplesData | null;
   updated_at: any;
 }
 
@@ -171,6 +267,7 @@ export interface RenameFile {
 
 export interface RenameFileVariables {
   id: number;
+  projectId: number;
   name?: string | null;
 }
 
@@ -183,7 +280,10 @@ export interface RenameFileVariables {
 // ====================================================
 
 export interface EditFile_update_files_by_pk {
+  annotation_data: any | null;
+  annotation_up_to_date: boolean;
   content: string;
+  sentences: string[] | null;
   created_at: any;
   graph_data: any;
   graph_up_to_date: boolean;
@@ -192,6 +292,11 @@ export interface EditFile_update_files_by_pk {
   project_id: number;
   summary_content: string | null;
   summary_up_to_date: boolean;
+  summary_annotation_data: MyAnnotationData | null;
+  summary_alignment_data: MyAlignmentData | null;
+  summary_triple_data: MyTriplesData | null;
+  summary_sentences: string[] | null;
+  triple_data: MyTriplesData | null;
   updated_at: any;
 }
 
@@ -201,7 +306,11 @@ export interface EditFile {
 
 export interface EditFileVariables {
   id: number;
+  projectId: number;
   content?: string | null;
+  sentences?: any | null;
+  annotationData?: any | null;
+  tripleData?: any | null;
 }
 
 
@@ -213,7 +322,10 @@ export interface EditFileVariables {
 // ====================================================
 
 export interface DeleteFile_delete_files_by_pk {
+  annotation_data: any | null;
+  annotation_up_to_date: boolean;
   content: string;
+  sentences: string[] | null;
   created_at: any;
   graph_data: any;
   graph_up_to_date: boolean;
@@ -222,6 +334,11 @@ export interface DeleteFile_delete_files_by_pk {
   project_id: number;
   summary_content: string | null;
   summary_up_to_date: boolean;
+  summary_annotation_data: MyAnnotationData | null;
+  summary_alignment_data: MyAlignmentData | null;
+  summary_triple_data: MyTriplesData | null;
+  summary_sentences: string[] | null;
+  triple_data: MyTriplesData | null;
   updated_at: any;
 }
 
@@ -231,6 +348,7 @@ export interface DeleteFile {
 
 export interface DeleteFileVariables {
   id: number;
+  projectId: number;
 }
 
 /* tslint:disable */

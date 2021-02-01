@@ -1,10 +1,9 @@
 import React, {ChangeEvent, useState} from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-import Project from "../../types/Project";
 import Form from "react-bootstrap/Form";
-import {useRenameProjectById} from "./graphql/projectsGraphQL";
-import {GetProjectById_projects_by_pk} from "./types/projects-generated-types";
+import {useRenameProjectById} from "../../graphql/projects";
+import {GetProjectById_projects_by_pk} from "../../graphql/types/projects-generated-types";
 
 type RenameProjectFormProps = {
     project: GetProjectById_projects_by_pk

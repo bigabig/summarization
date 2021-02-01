@@ -1,5 +1,5 @@
 import React, {ChangeEvent, useState} from "react";
-import {useAddProject} from "./graphql/projectsGraphQL";
+import {useAddProject} from "../../graphql/projects";
 import InputGroup from "react-bootstrap/InputGroup";
 import Button from "react-bootstrap/Button";
 import FormControl from "react-bootstrap/FormControl";
