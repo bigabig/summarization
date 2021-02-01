@@ -1,29 +1,27 @@
-import {MyAnnotationData, MyTriplesData} from "../../graphql/types/annotations";
 import React, {useLayoutEffect, useState} from "react";
-import {MyAlignmentData} from "../../graphql/types/alignments";
 import TopSentences from "./TopSentences";
 import AnnotatedSentence from "./AnnotatedSentence";
 import TripleSentence from "./TripleSentence";
+import heatmap from "../../helper/heatmapColorscale";
+import {MyDocument} from "../../graphql/types/document";
 
 
 type DocumentProvenanceViewerProps = {
-    sentences: string[] | null | undefined
-    annotationData: MyAnnotationData | null | undefined
-    alignmentData: MyAlignmentData | null | undefined
-    triplesData: MyTriplesData | null | undefined
+    document: MyDocument | null | undefined
+    summaryDocument: MyDocument | null | undefined
     sentenceID: number,
     showNER: boolean,
     showTriples: boolean,
 }
 
-function DocumentProvenanceViewer({sentences, annotationData, alignmentData, triplesData, sentenceID, showNER, showTriples}: DocumentProvenanceViewerProps) {
+function DocumentProvenanceViewer({document, summaryDocument, sentenceID, showNER, showTriples}: DocumentProvenanceViewerProps) {
     // local state
     const [selectedTripleSentence, setSelectedTripleSentence] = useState(-1);
 
     // reset local state whenever the file changes
     useLayoutEffect(() => {
         setSelectedTripleSentence(-1);
-    }, [annotationData, alignmentData])
+    }, [document])
 
     // actions
     const handleSelectTriple = (tripleID: number, selected: boolean) => {
@@ -38,50 +36,40 @@ function DocumentProvenanceViewer({sentences, annotationData, alignmentData, tri
     let content: JSX.Element | JSX.Element[] = []
 
     // case zero: no alignment data is available
-    if(!(alignmentData && sentences && sentenceID < alignmentData.length)) {
+    if(!(summaryDocument && document && sentenceID < summaryDocument.sentence_alignment.length)) {
         content = <p>No alignment data is available for this document. Please save and/or summarize the document to generate alignments automatically.</p>
 
     // case one: visualize alignments
     } else if(!showNER && ! showTriples) {
-        content = sentences.map((sentence, index) => (
+        content = document.sentences.map((sentence, index) => (
             <p key={index} id={'document-sentence-' + index} className="document-sentence"
-               style={sentenceID >= 0 && alignmentData[sentenceID][index] >= 0.75 ? {backgroundColor: "rgba(0, 255, 255," + 4 * (alignmentData[sentenceID][index] - 0.75) + ")"} : {}}>
-                {sentence}
+               style={sentenceID >= 0 ? {backgroundColor: heatmap(4 * (summaryDocument.sentence_alignment[sentenceID][index] - 0.75))} : {}}>
+                {sentence.text}
             </p>
         ))
 
     // case two: visualize named entities + alignments
     } else if (showNER) {
-
-        if(annotationData) {
-            content = annotationData
-                .map((annotation, index) => (
-                    <p key={index} id={'document-sentence-' + index} className="document-sentence"
-                       style={sentenceID >= 0 && alignmentData[sentenceID][index] >= 0.75 ? {backgroundColor: "rgba(0, 255, 255," + 4 * (alignmentData[sentenceID][index] - 0.75) + ")"} : {}}>
-                        <AnnotatedSentence key={index} annotation={annotation} showNER={showNER}/>
-                    </p>
-                ))
-        } else {
-            content = <p>No annotations available for this document. Please save and/or summarize the document to generate annotations automatically.</p>
-        }
+        content = document.sentences
+            .map((sentence, index) => (
+                <p key={index} id={'document-sentence-' + index} className="document-sentence"
+                   style={sentenceID >= 0 ? {backgroundColor: heatmap(4 * (summaryDocument.sentence_alignment[sentenceID][index] - 0.75))} : {}}>
+                    <AnnotatedSentence key={index} sentence={sentence}/>
+                </p>
+            ))
 
     // case three: visualize triples + alignments
     } else if (showTriples) {
-
-        if (triplesData) {
-            content = triplesData.map((triple, index) => (
-                <p key={index} id={'document-sentence-' + index} className="document-sentence"
-                   style={{
-                       backgroundColor: sentenceID >= 0 && alignmentData[sentenceID][index] >= 0.75 ? "rgba(0, 255, 255," + 4 * (alignmentData[sentenceID][index] - 0.75) : "",
-                       opacity: selectedTripleSentence >= 0 && index !== selectedTripleSentence ? '0.3333' : '1',
-                       pointerEvents: selectedTripleSentence >= 0 && index !== selectedTripleSentence ? "none" : 'all'
-                   }}>
-                    <TripleSentence triple={triple} onSelect={(selected) => handleSelectTriple(index, selected)}/>
-                </p>
-            ))
-        } else {
-            content = <p>No triples available for this document. Please save and/or summarize the document to generate triples automatically.</p>
-        }
+        content = document.sentences.map((sentence, index) => (
+            <p key={index} id={'document-sentence-' + index} className="document-sentence"
+               style={{
+                   backgroundColor: sentenceID >= 0 ? heatmap(4 * (summaryDocument.sentence_alignment[sentenceID][index] - 0.75)) : "",
+                   opacity: selectedTripleSentence >= 0 && index !== selectedTripleSentence ? '0.3333' : '1',
+                   pointerEvents: selectedTripleSentence >= 0 && index !== selectedTripleSentence ? "none" : 'all'
+               }}>
+                <TripleSentence triple={sentence.triples_raw} onSelect={(selected) => handleSelectTriple(index, selected)}/>
+            </p>
+        ))
 
     // some error
     } else {
@@ -90,10 +78,10 @@ function DocumentProvenanceViewer({sentences, annotationData, alignmentData, tri
 
     return (
         <div className="textContainer text-left">
-            {alignmentData && sentenceID < alignmentData.length && sentences && sentenceID >= 0 && (
+            {summaryDocument && sentenceID < summaryDocument.sentence_alignment.length && document && sentenceID >= 0 && (
                 <div /*className="sticky-top"*/ style={{backgroundColor: "white"}}>
                     <h3>Top sentences:</h3>
-                    <TopSentences sentenceID={sentenceID} alignmentData={alignmentData} sentences={sentences} />
+                    <TopSentences sentenceID={sentenceID} alignmentData={summaryDocument.sentence_alignment} sentences={document.sentences.map(s => s.text)} />
                     <hr />
                 </div>
             )}

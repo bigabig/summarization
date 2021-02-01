@@ -1,8 +1,6 @@
-import {MyAlignmentData} from "../../graphql/types/alignments";
-
 export type TopSentencesProps = {
     sentenceID: number,
-    alignmentData: MyAlignmentData,
+    alignmentData: number[][],
     sentences: string[]
 }
 

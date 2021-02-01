@@ -1,9 +1,9 @@
-import {MyTriple} from "../../graphql/types/annotations";
 import {useState} from "react";
 import parse from 'html-react-parser';
+import {TripleRaw} from "../../graphql/types/triple";
 
 export type TripleSentenceProps = {
-    triple: MyTriple,
+    triple: TripleRaw,
     onSelect: (arg0: boolean) => void
 }
 

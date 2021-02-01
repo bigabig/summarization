@@ -99,7 +99,7 @@ ol, ul {
 
 [data-entity] {
     padding: 0.25em 0.35em;
-    margin: 0px 0.25em;
+    margin: 0.125em 0.25em;
     line-height: 1;
     display: inline-block;
     border-radius: 0.25em;
@@ -120,7 +120,7 @@ ol, ul {
 }
 
 [data-entity][data-entity="person"] {
-    background: rgba(166, 226, 45, 0.2);
+    background: rgb(231 255 182);
     border-color: rgb(166, 226, 45);
 }
 
@@ -129,7 +129,7 @@ ol, ul {
 }
 
 [data-entity][data-entity="org"] {
-    background: rgba(67, 198, 252, 0.2);
+    background: rgb(209 242 255);
     border-color: rgb(67, 198, 252);
 }
 
@@ -138,7 +138,7 @@ ol, ul {
 }
 
 [data-entity][data-entity="date"] {
-    background: rgba(47, 187, 171, 0.2);
+    background: rgb(172 232 226);
     border-color: rgb(47, 187, 171);
 }
 
@@ -146,12 +146,15 @@ ol, ul {
     background: rgb(47, 187, 171);
 }
 
-/*.annotationContainer {*/
-/*    font: 12px/normal 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;*/
-/*    line-height: 1.5;*/
-/*    color: #61a5ea;*/
-/*    padding: 0.5rem;*/
-/*}*/
+[data-entity][data-entity="v"] {
+    cursor: pointer;
+}
+
+[data-entity][data-entity="v"].active-verb {
+    background: #28a745;
+    border-color: #1c7430;
+    color: #fff;
+}
 
 .textContainer {
     scroll-behavior: smooth;
@@ -174,15 +177,12 @@ ol, ul {
     text-align: left;
 }
 
+.textContainer p {
+    margin: 0;
+    padding: 0.5rem;
+}
+
 .summary-sentence {
     cursor: pointer;
 }
 
-[data-entity][data-entity="v"] {
-    cursor: pointer;
-}
-
-[data-entity][data-entity="v"].active-verb {
-    background: rgba(220, 10, 10, 0.75);
-    border-color: red;
-}

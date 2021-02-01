@@ -23,11 +23,11 @@ import {EditFileVariables, GetFileById} from "../../graphql/types/files-generate
 import {useEditFileById, useGetFileById} from "../../graphql/files";
 import TokenAnnotator from "react-text-annotate/lib/TokenAnnotator";
 import axios, {AxiosResponse} from "axios";
-import {MyAnnotationDataResult} from "../../graphql/types/annotations";
 import {Mode, mode2Text} from "./Editor";
 import DocumentProvenanceViewer from "../provenance/DocumentProvenanceViewer";
 import {useRouteMatch} from "react-router-dom";
 import {ProjectAndFileMatch} from "../../graphql/types/ProjectMatch";
+import {NewAnnotationResult} from "../../graphql/types/results";
 
 type InputWindowProps = {
     height: number,
@@ -89,21 +89,19 @@ function InputWindow({height, mode, setMode, sentenceID}: InputWindowProps) {
 
         try {
             // do the post request
-            let result = await axios.post<any, AxiosResponse<MyAnnotationDataResult>>("http://localhost:3333/annotate", {
+            let result = await axios.post<any, AxiosResponse<NewAnnotationResult>>("http://localhost:3333/annotate", {
                 text: fileContent
             });
 
             // check if result contains the data we need
-            if(result?.data?.annotations && result?.data?.triples) {
+            if(result?.data?.document) {
 
                 // perform some logic with the result data
                 let variables: EditFileVariables = {
                     id: fileId,
                     projectId: projectId,
                     content: fileContent,
-                    sentences: result.data.annotations.map(annotation => annotation.text),
-                    annotationData: result.data.annotations,
-                    tripleData: result.data.triples
+                    document: result.data.document
                 }
                 await update({variables});
 
@@ -193,10 +191,8 @@ function InputWindow({height, mode, setMode, sentenceID}: InputWindowProps) {
                         )}
                         {!error && mode === Mode.Provenance && (
                             <DocumentProvenanceViewer
-                                              sentences={data?.files_by_pk?.sentences}
-                                              annotationData={data?.files_by_pk?.annotation_data}
-                                              alignmentData={data?.files_by_pk?.summary_alignment_data}
-                                              triplesData={data?.files_by_pk?.triple_data}
+                                              document={data?.files_by_pk?.document}
+                                              summaryDocument={data?.files_by_pk?.summary_document}
                                               sentenceID={sentenceID}
                                               showNER={showNER}
                                               showTriples={showTriples}

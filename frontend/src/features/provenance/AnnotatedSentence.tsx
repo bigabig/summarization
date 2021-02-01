@@ -1,15 +1,16 @@
-import {MyAnnotation} from "../../graphql/types/annotations";
+import {Span} from "../../graphql/types/annotations";
 import React from "react";
 import parse from 'html-react-parser';
+import {Sentence} from "../../graphql/types/sentence";
 
 type AnnotatedSentenceProps = {
-    annotation: MyAnnotation
-    showNER: boolean
+    sentence: Sentence
 }
 
-function AnnotatedSentence({annotation, showNER}: AnnotatedSentenceProps) {
+function AnnotatedSentence({sentence}: AnnotatedSentenceProps) {
 
-    const render = ({text, ents}: MyAnnotation) => {
+    const render = (text: string, ents: Span[]) => {
+        console.log(ents)
         let result = "";
         let offset = 0;
 
@@ -24,11 +25,7 @@ function AnnotatedSentence({annotation, showNER}: AnnotatedSentenceProps) {
                 }
             });
 
-            if(showNER) {
-                result += `<mark data-entity=${tag.toLowerCase()}>${entity}</mark>`
-            } else {
-                result += entity
-            }
+            result += `<mark data-entity=${tag.toLowerCase()}>${entity}</mark>`
 
             offset = end;
         });
@@ -39,7 +36,7 @@ function AnnotatedSentence({annotation, showNER}: AnnotatedSentenceProps) {
 
     return (
         <>
-            {parse(render(annotation))}
+            {parse(render(sentence.text, sentence.ents))}
         </>
     )
 }

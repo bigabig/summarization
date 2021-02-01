@@ -1,20 +1,19 @@
-import {MyAnnotationData, MyTriplesData} from "../../graphql/types/annotations";
 import React, {useEffect, useState} from "react";
 import AnnotatedSentence from "./AnnotatedSentence";
 import TripleSentence from "./TripleSentence";
+import heatmap from "../../helper/heatmapColorscale";
+import {MyDocument} from "../../graphql/types/document";
 
 
 type SummaryProvenanceViewerProps = {
-    annotationData: MyAnnotationData | null | undefined
-    triplesData: MyTriplesData | null | undefined
-    sentences: string[] | null | undefined
+    summaryDocument: MyDocument | null | undefined
     sentenceID: number,
     setSentenceID: React.Dispatch<React.SetStateAction<number>>,
     showNER: boolean,
     showTriples: boolean,
 }
 
-function SummaryProvenanceViewer({annotationData, triplesData, sentences, sentenceID, setSentenceID, showNER, showTriples}: SummaryProvenanceViewerProps) {
+function SummaryProvenanceViewer({summaryDocument, sentenceID, setSentenceID, showNER, showTriples}: SummaryProvenanceViewerProps) {
     // local state
     const [isHidden, setIsHidden] = useState(true);
     const [selectedTripleSentence, setSelectedTripleSentence] = useState(-1);
@@ -23,7 +22,7 @@ function SummaryProvenanceViewer({annotationData, triplesData, sentences, senten
     useEffect(() => {
         setIsHidden(true);
         setSelectedTripleSentence(-1);
-    }, [annotationData, triplesData])
+    }, [summaryDocument])
 
     // actions
     const handleSelectTriple = (tripleID: number, selected: boolean) => {
@@ -52,48 +51,45 @@ function SummaryProvenanceViewer({annotationData, triplesData, sentences, senten
     let content: JSX.Element | JSX.Element[] = []
 
     // case zero: no sentence data is available
-    if(!sentences) {
+    if(!summaryDocument) {
         content = <p>No alignment data is available for this document. Please save and/or summarize the document to generate alignments automatically.</p>
 
     // case one: visualize alignments
     } else if(!showNER && !showTriples) {
-        content = sentences.map((sentence, index) => (
-            <p key={index} id={'summary-sentence-'+index} onClick={() => handleClick(index)} className="summary-sentence" style={index === sentenceID ? {backgroundColor: "rgba(0, 255, 255, 1)"} : {}}>
-                {sentence}
+        content = summaryDocument.sentences.map((sentence, index) => (
+            <p key={index} id={'summary-sentence-'+index}
+               onClick={() => handleClick(index)}
+               className="summary-sentence"
+               style={index === sentenceID ? {backgroundColor: heatmap(1)} : {}}>
+                {sentence.text}
             </p>
         ))
 
     // case two: visualize named entities + alignments
     } else if (showNER) {
-
-        if(annotationData) {
-            content = annotationData
-                .map((annotation, index) => (
-                    <p key={index} id={'summary-sentence-'+index} onClick={() => handleClick(index)} className="summary-sentence" style={index === sentenceID ? {backgroundColor: "rgba(0, 255, 255, 1)"} : {}}>
-                        <AnnotatedSentence key={index} annotation={annotation} showNER={showNER}/>
-                    </p>
-                ))
-        } else {
-            content = <p>No annotations available for this document. Please save and/or summarize the document to generate annotations automatically.</p>
-        }
+        content = summaryDocument.sentences
+            .map((sentence, index) => (
+                <p key={index} id={'summary-sentence-'+index}
+                   onClick={() => handleClick(index)}
+                   className="summary-sentence"
+                   style={index === sentenceID ? {backgroundColor: heatmap(0.9)} : {}}>
+                    <AnnotatedSentence key={index} sentence={sentence}/>
+                </p>
+            ))
 
     // case three: visualize triples + alignments
     } else if (showTriples) {
-
-        if (triplesData) {
-            content = triplesData.map((triple, index) => (
-                <p key={index} id={'summary-sentence-'+index} onClick={() => handleClick(index)} className="summary-sentence"
-                   style={{
-                       backgroundColor: index === sentenceID ? "rgba(0, 255, 255, 1)": "",
-                       opacity: selectedTripleSentence >= 0 && index !== selectedTripleSentence ? '0.3333' : '1',
-                       pointerEvents: selectedTripleSentence >= 0 && index !== selectedTripleSentence ? "none" : 'all'
-                   }}>
-                    <TripleSentence key={index} triple={triple} onSelect={(selected) => handleSelectTriple(index, selected)}/>
-                </p>
-            ))
-        } else {
-            content = <p>No triples available for this document. Please save and/or summarize the document to generate triples automatically.</p>
-        }
+        content = summaryDocument.sentences.map((sentence, index) => (
+            <p key={index} id={'summary-sentence-'+index}
+               onClick={() => handleClick(index)} className="summary-sentence"
+               style={{
+                   backgroundColor: index === sentenceID ? heatmap(1) : "",
+                   opacity: selectedTripleSentence >= 0 && index !== selectedTripleSentence ? '0.3333' : '1',
+                   pointerEvents: selectedTripleSentence >= 0 && index !== selectedTripleSentence ? "none" : 'all'
+               }}>
+                <TripleSentence key={index} triple={sentence.triples_raw} onSelect={(selected) => handleSelectTriple(index, selected)}/>
+            </p>
+        ))
 
     // some error
     } else {

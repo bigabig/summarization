@@ -18,9 +18,9 @@ import "./styles/OutputWindow.css";
 import {Mode} from "../editor/Editor";
 import SummaryProvenanceViewer from "../provenance/SummaryProvenanceViewer";
 import axios, {AxiosResponse} from "axios";
-import {MySummarizationDataResult} from "../../graphql/types/annotations";
 import {useRouteMatch} from "react-router-dom";
 import {ProjectAndFileMatch} from "../../graphql/types/ProjectMatch";
+import {NewSummarizationResult} from "../../graphql/types/results";
 
 type OutputWindowProps = {
     height: number,
@@ -75,25 +75,22 @@ function OutputWindow({height, mode, sentenceID, setSentenceID}: OutputWindowPro
 
         try {
             // do the post request
-            let result = await axios.post<any, AxiosResponse<MySummarizationDataResult>>("http://localhost:3333/summarize", {
+            let result = await axios.post<any, AxiosResponse<NewSummarizationResult>>("http://localhost:3333/summarize", {
                 text: fileData.files_by_pk.content,
                 length: 140,
                 method: "sshleifer/distilbart-cnn-12-6"
             })
 
             // check if result contains the data we need
-            if(result?.data?.alignment && result?.data?.annotations && result?.data?.summary && result?.data?.triples) {
+            if(result?.data?.input_document && result?.data?.summary_document) {
 
                 // perform some logic with the result data
                 await updateSummary({
                     variables: {
                         id: fileId,
                         projectId: projectId,
-                        summary_content: result.data.summary.reduce((previousValue: string, currentValue: string) => previousValue += "\n" + currentValue, "").trim(),
-                        summary_annotation_data: result.data.annotations,
-                        summary_alignment_data: result.data.alignment,
-                        summary_sentences: result.data.annotations.map((annotation: any) => annotation.text),
-                        summary_triple_data: result.data.triples
+                        document: result.data.input_document,
+                        summaryDocument: result.data.summary_document
                     }
                 });
 
@@ -162,7 +159,7 @@ function OutputWindow({height, mode, sentenceID, setSentenceID}: OutputWindowPro
                                 {JSON.stringify(fileError, null, 2)}
                     </pre>
                         )}
-                        {!fileError && !isSummaryLoading && fileData?.files_by_pk?.summary_content && (
+                        {!fileError && !isSummaryLoading && fileData?.files_by_pk?.summary_document?.text && (
                             <AceEditor
                                 readOnly={true}
                                 mode="text"
@@ -171,11 +168,11 @@ function OutputWindow({height, mode, sentenceID, setSentenceID}: OutputWindowPro
                                 name="summary-editor"
                                 width="100%"
                                 height="100%"
-                                value={fileData.files_by_pk.summary_content}
+                                value={fileData.files_by_pk.summary_document.sentences.map(s => s.text).join("\n")}
                                 editorProps={{ $blockScrolling: true}}
                             />
                         )}
-                        {!fileError && !isSummaryLoading && !fileData?.files_by_pk?.summary_up_to_date && (
+                        {!fileError && !isSummaryLoading && !fileData?.files_by_pk?.documents_up_to_date && (
                             <div className="uptodateContainer">
                                 <div> ⚠️Summary is not up-to-date! ⚠️</div>
                             </div>
@@ -184,9 +181,7 @@ function OutputWindow({height, mode, sentenceID, setSentenceID}: OutputWindowPro
                 )}
                 {mode === Mode.Provenance && (
                     <SummaryProvenanceViewer
-                                      annotationData={fileData?.files_by_pk?.summary_annotation_data}
-                                      triplesData={fileData?.files_by_pk?.summary_triple_data}
-                                      sentences={fileData?.files_by_pk?.summary_sentences}
+                                      summaryDocument={fileData?.files_by_pk?.summary_document}
                                       sentenceID={sentenceID}
                                       setSentenceID={setSentenceID}
                                       showNER={showNER}

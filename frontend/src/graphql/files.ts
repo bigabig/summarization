@@ -29,24 +29,17 @@ import * as Types from "./types/files-generated-types";
 const GET_FILE_BY_ID_QUERY = gql`
   query GetFileById($id: Int!, $projectId: Int!) {
     files_by_pk(id: $id, project_id: $projectId) {
-      annotation_data
-      annotation_up_to_date
+      id
+      project_id
+      name
       content
-      sentences
-      created_at
       graph_data
       graph_up_to_date
-      id
-      name
-      project_id
-      summary_content
-      summary_up_to_date
-      summary_annotation_data
-      summary_alignment_data
-      summary_triple_data
-      summary_sentences
-      triple_data
+      document
+      summary_document
+      documents_up_to_date
       updated_at
+      created_at
     }
   }
 `;
@@ -54,24 +47,17 @@ const GET_FILE_BY_ID_QUERY = gql`
 const GET_FILES_BY_PROJECT_ID_QUERY = gql`
   query GetFilesByProjectId($_eq: Int) {
     files(where: {project_id: {_eq: $_eq}}) {
-      annotation_data
-      annotation_up_to_date
+      id
+      project_id
+      name
       content
-      sentences
-      created_at
       graph_data
       graph_up_to_date
-      id
-      name
-      project_id
-      summary_content
-      summary_up_to_date
-      summary_annotation_data
-      summary_alignment_data
-      summary_triple_data
-      summary_sentences
-      triple_data
+      document
+      summary_document
+      documents_up_to_date
       updated_at
+      created_at
     }
   }
 `;
@@ -79,74 +65,35 @@ const GET_FILES_BY_PROJECT_ID_QUERY = gql`
 const ADD_FILE_MUTATION = gql`
   mutation AddFile($name: String, $content: String, $project_id: Int) {
     insert_files_one(object: {content: $content, name: $name, project_id: $project_id}) {
-      annotation_data
-      annotation_up_to_date
+      id
+      project_id
+      name
       content
-      sentences
-      created_at
       graph_data
       graph_up_to_date
-      id
-      name
-      project_id
-      summary_content
-      summary_up_to_date
-      summary_annotation_data
-      summary_alignment_data
-      summary_triple_data
-      summary_sentences
-      triple_data
+      document
+      summary_document
+      documents_up_to_date
       updated_at
-    }
-  }
-`;
-
-const UPDATE_FILE_MUTATION = gql`
-  mutation UpdateFile($id: Int!, $projectId: Int!, $content: String, $name: String) {
-    update_files_by_pk(pk_columns: {id: $id, project_id: $projectId}, _set: {content: $content, name: $name, summary_up_to_date: false}) {
-      annotation_data
-      annotation_up_to_date
-      content
-      sentences
       created_at
-      graph_data
-      graph_up_to_date
-      id
-      name
-      project_id
-      summary_content
-      summary_up_to_date
-      summary_annotation_data
-      summary_alignment_data
-      summary_triple_data
-      summary_sentences
-      triple_data
-      updated_at
     }
   }
 `;
 
 const UPDATE_SUMMARY_MUTATION = gql`
-  mutation UpdateSummary($id: Int!, $projectId: Int! $summary_content: String, $summary_annotation_data: json, $summary_alignment_data: json, $summary_triple_data: json, $summary_sentences: json) {
-    update_files_by_pk(pk_columns: {id: $id, project_id: $projectId}, _set: {summary_content: $summary_content, summary_up_to_date: true, summary_annotation_data: $summary_annotation_data, summary_alignment_data: $summary_alignment_data, summary_triple_data: $summary_triple_data, summary_sentences: $summary_sentences}) {
-      annotation_data
-      annotation_up_to_date
+  mutation UpdateSummary($id: Int!, $projectId: Int!, $summaryDocument: json, $document: json) {
+    update_files_by_pk(pk_columns: {id: $id, project_id: $projectId}, _set: {summary_document: $summaryDocument, document: $document, documents_up_to_date: true}) {
+      id
+      project_id
+      name
       content
-      sentences
-      created_at
       graph_data
       graph_up_to_date
-      id
-      name
-      project_id
-      summary_content
-      summary_up_to_date
-      summary_annotation_data
-      summary_alignment_data
-      summary_triple_data
-      summary_sentences
-      triple_data
+      document
+      summary_document
+      documents_up_to_date
       updated_at
+      created_at
     }
   }
 `;
@@ -154,49 +101,35 @@ const UPDATE_SUMMARY_MUTATION = gql`
 const RENAME_FILE_MUTATION = gql`
   mutation RenameFile($id: Int!, $projectId: Int!, $name: String) {
     update_files_by_pk(pk_columns: {id: $id, project_id: $projectId}, _set: {name: $name}) {
-      annotation_data
-      annotation_up_to_date
+      id
+      project_id
+      name
       content
-      sentences
-      created_at
       graph_data
       graph_up_to_date
-      id
-      name
-      project_id
-      summary_content
-      summary_up_to_date
-      summary_annotation_data
-      summary_alignment_data
-      summary_triple_data
-      summary_sentences
-      triple_data
+      document
+      summary_document
+      documents_up_to_date
       updated_at
+      created_at
     }
   }
 `;
 
 const EDIT_FILE_MUTATION = gql`
-  mutation EditFile($id: Int!, $projectId: Int!, $content: String, $sentences: json, $annotationData: json, $tripleData: json) {
-    update_files_by_pk(pk_columns: {id: $id, project_id: $projectId}, _set: {content: $content, sentences: $sentences, summary_up_to_date: false, annotation_data: $annotationData, annotation_up_to_date: true, triple_data: $tripleData}) {
-      annotation_data
-      annotation_up_to_date
+  mutation EditFile($id: Int!, $projectId: Int!, $content: String, $document: json) {
+    update_files_by_pk(pk_columns: {id: $id, project_id: $projectId}, _set: {content: $content, documents_up_to_date: false, document: $document}) {
+      id
+      project_id
+      name
       content
-      sentences
-      created_at
       graph_data
       graph_up_to_date
-      id
-      name
-      project_id
-      summary_content
-      summary_up_to_date
-      summary_annotation_data
-      summary_alignment_data
-      summary_triple_data
-      summary_sentences
-      triple_data
+      document
+      summary_document
+      documents_up_to_date
       updated_at
+      created_at
     }
   }
 `;
@@ -205,24 +138,17 @@ const EDIT_FILE_MUTATION = gql`
 const DELETE_FILE_MUTATION = gql`
   mutation DeleteFile($id: Int!, $projectId: Int!) {
     delete_files_by_pk(id: $id, project_id: $projectId) {
-      annotation_data
-      annotation_up_to_date
+      id
+      project_id
+      name
       content
-      sentences
-      created_at
       graph_data
       graph_up_to_date
-      id
-      name
-      project_id
-      summary_content
-      summary_up_to_date
-      summary_annotation_data
-      summary_alignment_data
-      summary_triple_data
-      summary_sentences
-      triple_data
+      document
+      summary_document
+      documents_up_to_date
       updated_at
+      created_at
     }
   }
 `;
@@ -295,11 +221,6 @@ export function useDeleteFile(projectId: number) {
                 }
             ]
         });
-    return { mutate, data, error, loading };
-}
-
-export function useUpdateFileById() {
-    const [mutate, { data, error, loading }] = useMutation<Types.UpdateFile, Types.UpdateFileVariables>(UPDATE_FILE_MUTATION)
     return { mutate, data, error, loading };
 }
 
