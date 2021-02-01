@@ -20,7 +20,7 @@ import SummaryProvenanceViewer from "../provenance/SummaryProvenanceViewer";
 import axios, {AxiosResponse} from "axios";
 import {MySummarizationDataResult} from "../../graphql/types/annotations";
 import {useRouteMatch} from "react-router-dom";
-import {ProjectAndFileMatch, ProjectMatch} from "../../graphql/types/ProjectMatch";
+import {ProjectAndFileMatch} from "../../graphql/types/ProjectMatch";
 
 type OutputWindowProps = {
     height: number,

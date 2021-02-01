@@ -3,6 +3,7 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import {useDeleteProject, useGetProjectById } from "../../graphql/projects";
 import RenameProjectForm from "./RenameProjectForm";
+import { Link } from "react-router-dom";
 
 type ProjectTableRowProps = {
     projectId: number,
@@ -50,7 +51,7 @@ function ProjectTableRow({ projectId }: ProjectTableRowProps) {
                 <td className="align-middle">{data.projects_by_pk.name}</td>
                 <td className="align-middle">Last modified 21 days ago</td>
                 <td className="align-middle">
-                    <Button variant="success" className="mr-2" disabled={mutationLoading} href={'/project/'+data.projects_by_pk.id}>Open</Button>
+                    <Link to={'/project/'+data.projects_by_pk.id} className={"mr-2 btn btn-success"}>Open</Link>
                     <RenameProjectForm project={data.projects_by_pk} />
                     <Button variant="danger" className="ml-2" disabled={mutationLoading} onClick={onClickDeleteProject}>Delete</Button>
                     {mutationError && (

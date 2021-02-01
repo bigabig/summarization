@@ -1,9 +1,8 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Switch, Redirect } from "react-router-dom";
 import ProjectManager from "./features/projects/ProjectManager";
-import Editor from "./features/editor/Editor";
 import Navigation from "./features/navigation/Navigation";
-import TestEditor from "./features/TestEditor";
+import Editor from "./features/editor/Editor";
 
 function App() {
     return (
@@ -11,8 +10,7 @@ function App() {
             <Navigation />
             <Switch>
                 <Route path="/projects" component={ProjectManager} />
-                {/*<Route path={["/project/:projectId/file/:fileId", "/project/:projectId/all", "/project/:projectId"]} component={Editor} />*/}
-                <Route path={"/project/:projectId"} component={TestEditor} />
+                <Route path={"/project/:projectId"} component={Editor} />
                 <Redirect to="/projects" />
             </Switch>
         </Router>

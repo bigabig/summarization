@@ -2,7 +2,7 @@ import React, {ChangeEvent, useState} from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
-import {useGetFileById, useGetFileByIdNew, useRenameFileById} from "../../graphql/files";
+import {useGetFileById, useRenameFileById} from "../../graphql/files";
 import Dropdown from "react-bootstrap/Dropdown";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faPen} from "@fortawesome/free-solid-svg-icons";

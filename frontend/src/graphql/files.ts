@@ -1,6 +1,5 @@
 import {gql, useMutation, useQuery} from "@apollo/client";
 import * as Types from "./types/files-generated-types";
-import * as ProjectTypes from "./types/projects-generated-types";
 
 // const GET_ALL_FILES_QUERY = gql`
 //   query GetAllFiles {

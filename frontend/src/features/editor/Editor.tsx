@@ -1,14 +1,15 @@
-import FileBrowser from "../files/FileBrowser";
-import InputWindow from "./InputWindow";
-import OutputWindow from "../summaries/OutputWindow";
-import React, {useEffect, useLayoutEffect, useState} from "react";
-import useElementSizes from "../../helper/ElementSizes";
+import {Route, Switch, useParams, useRouteMatch} from "react-router-dom";
+import {useGetProjectById} from "../../graphql/projects";
+import {useGetFileByIdNew} from "../../graphql/files";
+import React, {useEffect, useState} from "react";
 // @ts-ignore
 import Split from 'react-split';
-import {Redirect, Route, RouteComponentProps, Switch, useParams, useRouteMatch} from "react-router-dom";
-import {ProjectAndFileMatch, ProjectMatch} from "../../graphql/types/ProjectMatch";
-import {useGetProjectById} from "../../graphql/projects";
-import {useGetFileById, useGetFileByIdNew} from "../../graphql/files";
+import FileToolbar from "../files/FileToolbar";
+import FileList from "../files/FileList";
+import {ProjectAndFileMatch} from "../../graphql/types/ProjectMatch";
+import InputWindow from "./InputWindow";
+import OutputWindow from "../summaries/OutputWindow";
+import useElementSizes from "../../helper/ElementSizes";
 
 export enum Mode {
     Edit,
@@ -29,25 +30,72 @@ export function mode2Text(input: Mode) {
     }
 }
 
-interface Props extends RouteComponentProps<ProjectAndFileMatch> {
+type FileEditorProps = {
+    left: boolean
+    heights: number[],
+    mode: Mode
+    setMode: React.Dispatch<React.SetStateAction<Mode>>
+    sentenceID: number,
+    setSentenceID: React.Dispatch<React.SetStateAction<number>>,
 }
 
-/**
- * this component makes sure that the URL parameters projectId and fileId are valid and correspond to existing projects and files, respectively.
- */
-function Editor({match}: Props) {
-    const params = match.params;
-    const [fileId, setFileId] = useState<number>(-1);
-    const [projectId, setProjectId] = useState<number>(-1);
-    
+function FileEditor({left, heights, mode, setMode, sentenceID, setSentenceID}: FileEditorProps) {
+    // global url state
+    let params = useParams<ProjectAndFileMatch>();
+    const projectId: number = Number(params.projectId);
+    const fileId: number = Number(params.fileId);
+
+    // local state
+    const [height, mainNav, inputNav, inputFooterNav, outputNav, outputFooterNav] = heights;
+
+    // remote state
+    const {loading: fileLoading, error: fileError, data: fileData} = useGetFileByIdNew({id: fileId, projectId: projectId})
+
     useEffect(() => {
-        setProjectId(Number(params.projectId))
-        setFileId(Number(params.fileId))
-    })
-    // const fileId: number = fileId;
-    // const fileId: number = 1;
-    // const projectId: number = projectId;
-    // console.log(fileId);
+        setSentenceID(-1); // reset the selected provenance sentence whenever the file changes
+        window.dispatchEvent(new Event('resize'));      // fire the resize event whenever the fileId changes, so that components can calculate the correct heights
+    }, [projectId, fileId, setSentenceID])
+
+    return (
+        <>
+            {fileError && (
+                <p>ERROR</p>
+            )}
+            {fileLoading && (
+                <p>Loading Indicator</p>
+            )}
+            {!fileError && !fileLoading && !fileData && (
+                <p>This file does not exist.</p>
+            )}
+            {!fileError && !fileLoading && fileData && (
+                <div>
+                    {left && (
+                        <InputWindow height={(height - mainNav - inputNav - inputFooterNav)}
+                                     mode={mode}
+                                     setMode={setMode}
+                                     sentenceID={sentenceID} />
+                    )}
+                    {!left && (
+                        <OutputWindow height={(height - mainNav - outputNav - outputFooterNav)}
+                                      mode={mode}
+                                      sentenceID={sentenceID}
+                                      setSentenceID={setSentenceID} />
+                    )}
+                </div>
+            )}
+        </>
+    )
+}
+
+
+type ProjectMatch = {
+    projectId: string
+}
+
+function Editor() {
+    // global url state
+    const match = useRouteMatch<ProjectMatch>()
+    const projectId: number = Number(match.params.projectId);
 
     // local state
     const [height, mainNav, fileNav, inputNav, inputFooterNav, outputNav, outputFooterNav] = useElementSizes();
@@ -56,119 +104,106 @@ function Editor({match}: Props) {
 
     // remote state
     const {loading: projectLoading, error: projectError, data: projectData} = useGetProjectById({id: projectId})
-    const {loading: fileLoading, error: fileError, data: fileData} = useGetFileByIdNew({id: fileId, projectId: projectId})
 
-    useEffect(() => {
-        setSentenceID(-1); // reset the selected provenance sentence whenever the file changes
-        window.dispatchEvent(new Event('resize'));      // fire the resize event whenever the fileId changes, so that components can calculate the correct heights
-    }, [projectId, fileId])
-
-    if (!isNaN(projectId) && projectError) console.error(projectError);
-    if (!isNaN(fileId) && fileError) console.error(fileError);
-
-    console.log("------------------------------------")
-    console.log("Project ID " + projectId)
-    console.log("File ID " + fileId)
-
-    // view
     return (
         <>
-            {isNaN(projectId) && (
-                <p>{params.projectId} is not a valid project ID</p>
+            {projectError && (
+                <p>ERROR</p>
             )}
-
-            {!isNaN(projectId) && projectError && (
-                <p>A PROJECT ERROR OCCURED: Please check the console with shortcut CTRL + I</p>
+            {projectLoading && (
+                <p>Loading Indicator</p>
             )}
+            {!projectError && !projectLoading && !projectData && (
+                <p>This project does not exist.</p>
+            )}
+            {!projectError && !projectLoading && projectData && (
+                <Split className="wrap" sizes={[12, 44, 44]}>
+                    <div className="comp">
+                        <FileToolbar />
+                        <FileList height={(height - mainNav - fileNav)} />
+                        {/*<ul>*/}
+                        {/*    <li>*/}
+                        {/*        <NavLink to={`${match.url}/all`} className={"no-border-radius btn btn-primary btn-block"}>ALL</NavLink>*/}
+                        {/*    </li>*/}
+                        {/*    <li>*/}
+                        {/*        <NavLink to={`${match.url}/file/1`} className={"no-border-radius btn btn-primary btn-block"}>File 1</NavLink>*/}
+                        {/*    </li>*/}
+                        {/*    <li>*/}
+                        {/*        <NavLink to={`${match.url}/file/3`} className={"no-border-radius btn btn-primary btn-block"}>File 3</NavLink>*/}
+                        {/*    </li>*/}
+                        {/*    <li>*/}
+                        {/*        <NavLink to={`${match.url}/file/5`} className={"no-border-radius btn btn-primary btn-block"}>File 5</NavLink>*/}
+                        {/*    </li>*/}
+                        {/*    <li>*/}
+                        {/*        <NavLink to={`${match.url}/file/7`} className={"no-border-radius btn btn-primary btn-block"}>File 7</NavLink>*/}
+                        {/*    </li>*/}
+                        {/*    <li>*/}
+                        {/*        <NavLink to={`${match.url}/file/10`} className={"no-border-radius btn btn-primary btn-block"}>File 10</NavLink>*/}
+                        {/*    </li>*/}
+                        {/*    <li>*/}
+                        {/*        <NavLink to={`${match.url}/file/a`} className={"no-border-radius btn btn-primary btn-block"}>File A</NavLink>*/}
+                        {/*    </li>*/}
+                        {/*    <li>*/}
+                        {/*        <NavLink to={`${match.url}/file/100`} className={"no-border-radius btn btn-primary btn-block"}>File 100</NavLink>*/}
+                        {/*    </li>*/}
+                        {/*    <li>*/}
+                        {/*        <NavLink to={"/project/1"} className={"no-border-radius btn btn-primary btn-block"}>Project 1</NavLink>*/}
+                        {/*    </li>*/}
+                        {/*    <li>*/}
+                        {/*        <NavLink to={"/project/a"} className={"no-border-radius btn btn-primary btn-block"}>Project A</NavLink>*/}
+                        {/*    </li>*/}
+                        {/*    <li>*/}
+                        {/*        <NavLink to={"/project/1000"} className={"no-border-radius btn btn-primary btn-block"}>Project 1000</NavLink>*/}
+                        {/*    </li>*/}
+                        {/*</ul>*/}
+                    </div>
 
-            {!isNaN(projectId) && !projectError && (
-                <>
-                    {projectLoading && (
-                        <p>LOADING INDICATOR HERE PLS :) TODO</p>
-                    )}
-
-                    {!projectLoading && !projectData && (
-                        <p>This project does not exist</p>
-                    )}
-
-                    {!projectLoading && projectData && (
-
-                        <Split className="wrap" sizes={[12, 44, 44]}>
+                    <Switch>
+                        <Route path={`${match.path}/file/:fileId`}>
                             <div className="comp">
-                                <FileBrowser height={(height - mainNav - fileNav)} />
+                                <FileEditor left={true}
+                                            heights={[height, mainNav, inputNav, inputFooterNav, outputNav, outputFooterNav]}
+                                            mode={editorMode}
+                                            setMode={setEditorMode}
+                                            sentenceID={sentenceID}
+                                            setSentenceID={setSentenceID}
+                                />
                             </div>
 
-                            <div className="comp text-center">
+                            <div className="comp">
+                                <FileEditor left={false}
+                                            heights={[height, mainNav, inputNav, inputFooterNav, outputNav, outputFooterNav]}
+                                            mode={editorMode}
+                                            setMode={setEditorMode}
+                                            sentenceID={sentenceID}
+                                            setSentenceID={setSentenceID}
+                                />
+                            </div>
+                        </Route>
 
-                                <Switch>
-                                    <Route exact path={`/project/:projectId`}>
-                                        <div style={{fontSize: '1rem', color: 'black'}}>
-                                            <p>You have no file selected.</p>
-                                            <p>Please select a file or add a new file by clicking on the plus icon in the top left corner.</p>
-                                        </div>
-                                    </Route>
-
-                                    <Route exact path={`/project/:projectId/all`}>
-                                        <h3>All view</h3>
-                                    </Route>
-
-                                    <Route exact path={`/project/:projectId/file/:fileId`}>
-
-                                        {isNaN(fileId) && (
-                                            <p>{params.fileId} is not a valid file ID</p>
-                                        )}
-
-                                        {!isNaN(fileId) && fileError && (
-                                            <p>A FILE ERROR OCCURED: Please check the console with shortcut CTRL + I</p>
-                                        )}
-
-                                        {!isNaN(fileId) && !fileError && (
-                                            <>
-                                                {fileLoading && (
-                                                    <p>LOADING INDICATOR HERE PLS :) TODO</p>
-                                                )}
-
-                                                {!fileLoading && !fileData && (
-                                                    <p>This file does not exist</p>
-                                                )}
-
-                                                {!fileLoading && fileData && (
-
-                                                    <InputWindow height={(height - mainNav - inputNav - inputFooterNav)}
-                                                                 mode={editorMode}
-                                                                 setMode={setEditorMode}
-                                                                 sentenceID={sentenceID}
-                                                    />
-
-                                                )}
-                                            </>
-                                        )}
-                                    </Route>
-
-                                    <Redirect to={`/project/${projectId}/`} />
-                                </Switch>
-
+                        <Route path={`${match.path}/all`}>
+                            <div className="comp">
+                                <p>ALL</p>
                             </div>
 
-                            <div className="comp text-center">
-                                {/*<Switch>*/}
-                                {/*    <Route exact path={`/project/:projectId/file/:fileId`}>*/}
-                                {/*        {!fileData && (*/}
-                                {/*            <p>This file does not exist!</p>*/}
-                                {/*        )}*/}
-                                {/*        {fileData && (*/}
-                                {/*            <OutputWindow height={(height - mainNav - outputNav - outputFooterNav)}*/}
-                                {/*                          mode={editorMode}*/}
-                                {/*                          sentenceID={sentenceID}*/}
-                                {/*                          setSentenceID={setSentenceID}*/}
-                                {/*            />*/}
-                                {/*        )}*/}
-                                {/*    </Route>*/}
-                                {/*</Switch>*/}
+                            <div className="comp">
+                                <p>ALL</p>
                             </div>
-                        </Split>
-                    )}
-                </>
+                        </Route>
+
+                        <Route path={match.path}>
+                            <div className="comp">
+                                <h3>Please select a file.</h3>
+                            </div>
+
+                            <div className="comp">
+                                <h3>Please select a file.</h3>
+                            </div>
+                        </Route>
+
+                    </Switch>
+
+                </Split>
             )}
         </>
     )

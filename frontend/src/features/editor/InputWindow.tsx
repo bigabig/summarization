@@ -27,7 +27,7 @@ import {MyAnnotationDataResult} from "../../graphql/types/annotations";
 import {Mode, mode2Text} from "./Editor";
 import DocumentProvenanceViewer from "../provenance/DocumentProvenanceViewer";
 import {useRouteMatch} from "react-router-dom";
-import {ProjectAndFileMatch, ProjectMatch} from "../../graphql/types/ProjectMatch";
+import {ProjectAndFileMatch} from "../../graphql/types/ProjectMatch";
 
 type InputWindowProps = {
     height: number,
