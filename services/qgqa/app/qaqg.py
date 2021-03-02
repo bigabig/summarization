@@ -2,8 +2,8 @@ from utils import f1_score
 from pipelines import pipeline
 import numpy as np
 
-print("Loading multitask-qaqg-qg model...")
-nlp = pipeline("multitask-qaqg-qg", model="valhalla/t5-base-qaqg-qg-hl")
+print("Loading multitask-qa-qg model...")
+nlp = pipeline("multitask-qa-qg", model="valhalla/t5-base-qa-qg-hl")
 
 
 def calculate(text1, text2):
