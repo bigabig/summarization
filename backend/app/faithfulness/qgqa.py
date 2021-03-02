@@ -7,7 +7,7 @@ def calculate_qa_score(summary_document, source_document):
 
     # make request
     # this api generates questions based on text1 and answers them using text1 (this answer) and using text2 (other_answer)
-    response = requests.post(f"http://localhost:4444/qgqa", json={
+    response = requests.post(f"http://localhost:6666/qgqa", json={
         "text1": summary,
         "text2": source
     })
@@ -94,4 +94,4 @@ def example():
     print("LOL")
 
 
-example()
+# example()

@@ -1,4 +1,9 @@
 from app.space import apply_spacy
+from app.embeddings import embed_document
+from app.align import align_sentences
+from app.faithfulness.bertscore import calculate_bertscore
+from app.faithfulness.entailment import calculate_entailment
+from app.faithfulness.qgqa import calculate_qa
 
 
 def annotate(text):
@@ -18,24 +23,19 @@ def faithfulness_pipeline(data):
     summary_document = annotate(summary_text)
 
     # embedd document (every sentence)
-    from app.embeddings import embed_document
     embed_document(source_document)
     embed_document(summary_document)
 
     # align sentences (calculate similarity matrices)
-    from app.align import align_sentences
     align_sentences(summary_document, source_document)
 
     # step 6: compute bertscore
-    from app.faithfulness.bertscore import calculate_bertscore
     calculate_bertscore(summary_document, source_document)
 
     # step 7: compute entailment
-    from app.faithfulness.entailment import calculate_entailment
     calculate_entailment(summary_document, source_document, method=1)
 
     # step 8: compute qgqa
-    from app.faithfulness.qgqa import calculate_qa
     calculate_qa(summary_document, source_document)
 
     return source_document, summary_document

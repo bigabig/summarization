@@ -13,7 +13,7 @@ def calculate_entailment_score(source_document, entailed_document, method):
     obj = json.loads(obj)
 
     # make request
-    response = requests.post(f"http://localhost:4444/entailment", json=obj)
+    response = requests.post(f"http://localhost:5555/entailment", json=obj)
 
     json_result = response.json()
     # returns
