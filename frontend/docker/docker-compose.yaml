@@ -84,6 +84,28 @@ services:
       # find jwks uri here: http://localhost:8888/auth/realms/myrealm/.well-known/openid-configuration
       HASURA_GRAPHQL_JWT_SECRET: '{"jwk_url": "http://keycloak:8080/auth/realms/myrealm/protocol/openid-connect/certs","claims_namespace_path":"$$","claims_format":"json"}'
 
+#  qgqa:
+#    image: bigabig/qgqa:latest
+#    ports:
+#      - "4444:4444"
+#    volumes:
+#      - ./qgqa_models:/models
+#
+#  entailment:
+#    image: bigabig/entailment:latest
+#    ports:
+#      - "4444:4444"
+#    volumes:
+#      - ./entailment_models:/models
+#
+#  bertscore:
+#    image: bigabig/bertscore:latest
+#    ports:
+#      - "4444:4444"
+#    volumes:
+#      - ./bertscore_models:/models
+
+
 volumes:
   postgres_data:
 #  db_data:

@@ -1,6 +1,6 @@
 import {useState} from "react";
 import parse from 'html-react-parser';
-import {TripleRaw} from "../../graphql/types/triple";
+import {TripleRaw} from "../../types/triple";
 
 export type TripleSentenceProps = {
     triple: TripleRaw,

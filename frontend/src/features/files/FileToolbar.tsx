@@ -4,7 +4,7 @@ import RenameFileForm, {RenameFileFormMode} from "./RenameFileForm";
 import React from "react";
 import DeleteFileButton from "./DeleteFileButton";
 import {useRouteMatch} from "react-router-dom";
-import {ProjectAndFileMatch} from "../../graphql/types/ProjectMatch";
+import {ProjectAndFileMatch} from "../../types/ProjectMatch";
 
 function FileToolbar() {
     // global url state

@@ -2,9 +2,8 @@ import React, {useLayoutEffect, useState} from "react";
 import TopSentences from "./TopSentences";
 import AnnotatedSentence from "./AnnotatedSentence";
 import TripleSentence from "./TripleSentence";
-import heatmap from "../../helper/heatmapColorscale";
-import {MyDocument} from "../../graphql/types/document";
-
+import {heatmap} from "../../helper/colorscales";
+import {MyDocument} from "../../types/document";
 
 type DocumentProvenanceViewerProps = {
     document: MyDocument | null | undefined

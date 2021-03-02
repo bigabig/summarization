@@ -1,0 +1,8 @@
+version: '3.6'
+services:
+  bertscore:
+    image: bigabig/bertscore:latest
+    ports:
+      - "4444:4444"
+    volumes:
+      - ./bertscore_models:/models

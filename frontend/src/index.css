@@ -180,9 +180,69 @@ ol, ul {
 .textContainer p {
     margin: 0;
     padding: 0.5rem;
+    color: black;
 }
 
-.summary-sentence {
+.summary-sentence, .document-sentence, .document-triple, .summary-triple {
     cursor: pointer;
 }
 
+/*--------------------------------------------------------------------------------------------------------------------*/
+/* STYLING QA */
+/*--------------------------------------------------------------------------------------------------------------------*/
+
+[data-similarity] {
+    padding: 0.25em;
+    line-height: 1;
+    display: inline-block;
+    border-radius: 0.25em;
+    border: 1px solid;
+    color: #fff;
+}
+
+[data-similarity]::after {
+    box-sizing: border-box;
+    content: attr(data-similarity);
+    font-size: 0.6em;
+    line-height: 1;
+    padding: 0.35em;
+    border-radius: 0.35em;
+    text-transform: uppercase;
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0px 0px 0.1rem 0.5rem;
+}
+
+.qaContainer p {
+    line-height: 1.75em;
+    padding: 0.75rem;
+}
+
+/*--------------------------------------------------------------------------------------------------------------------*/
+/* STYLING BERTSCORE */
+/*--------------------------------------------------------------------------------------------------------------------*/
+
+/*--------------------------------------------------------------------------------------------------------------------*/
+/* STYLING ENTAILMENT */
+/*--------------------------------------------------------------------------------------------------------------------*/
+[data-entailment] {
+    padding: 0.25em;
+    line-height: 1;
+    display: inline-block;
+    border-radius: 0.25em;
+    border: 1px solid;
+    color: #fff;
+}
+
+[data-entailment]::before {
+    box-sizing: border-box;
+    content: attr(data-entailment);
+    font-size: 0.6em;
+    line-height: 1;
+    padding: 0.35em;
+    border-radius: 0.35em;
+    text-transform: uppercase;
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0rem 0.5rem 0rem 0rem;
+}

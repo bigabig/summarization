@@ -19,24 +19,26 @@ import "ace-builds/src-min-noconflict/ext-language_tools";
 import Nav from "react-bootstrap/Nav";
 import Tab from "react-bootstrap/Tab";
 import Graph from "../graph/Graph.js";
-import {EditFileVariables, GetFileById} from "../../graphql/types/files-generated-types";
+import {EditFileVariables, GetFileById} from "../../types/files-generated-types";
 import {useEditFileById, useGetFileById} from "../../graphql/files";
 import TokenAnnotator from "react-text-annotate/lib/TokenAnnotator";
-import axios, {AxiosResponse} from "axios";
 import {Mode, mode2Text} from "./Editor";
-import DocumentProvenanceViewer from "../provenance/DocumentProvenanceViewer";
 import {useRouteMatch} from "react-router-dom";
-import {ProjectAndFileMatch} from "../../graphql/types/ProjectMatch";
-import {NewAnnotationResult} from "../../graphql/types/results";
+import {ProjectAndFileMatch} from "../../types/ProjectMatch";
+import ProvenanceViewer from "../provenance/ProvenanceViewer";
+import TripleViewer from "../provenance/TripleViewer";
 
 type InputWindowProps = {
     height: number,
     mode: Mode,
     setMode: React.Dispatch<React.SetStateAction<Mode>>
     sentenceID: number,
+    setSentenceID: React.Dispatch<React.SetStateAction<number>>,
+    isSummarySentence: boolean,
+    setIsSummarySentence: React.Dispatch<React.SetStateAction<boolean>>,
 }
 
-function InputWindow({height, mode, setMode, sentenceID}: InputWindowProps) {
+function InputWindow({height, mode, setMode, sentenceID, setSentenceID, isSummarySentence, setIsSummarySentence}: InputWindowProps) {
     // url
     let match = useRouteMatch<ProjectAndFileMatch>();
     const fileId: number = Number(match.params.fileId);
@@ -88,27 +90,13 @@ function InputWindow({height, mode, setMode, sentenceID}: InputWindowProps) {
         }
 
         try {
-            // do the post request
-            let result = await axios.post<any, AxiosResponse<NewAnnotationResult>>("http://localhost:3333/annotate", {
-                text: fileContent
-            });
-
-            // check if result contains the data we need
-            if(result?.data?.document) {
-
-                // perform some logic with the result data
-                let variables: EditFileVariables = {
-                    id: fileId,
-                    projectId: projectId,
-                    content: fileContent,
-                    document: result.data.document
-                }
-                await update({variables});
-
-            // throw an error if the result does not contain the data we expect
-            } else {
-                throw new Error("Failed parsing the result from http://localhost:3333/annotate.");
+            // update file
+            let variables: EditFileVariables = {
+                id: fileId,
+                projectId: projectId,
+                content: fileContent,
             }
+            await update({variables});
 
         // display errors that occur during the process as alerts
         } catch (error) {
@@ -152,6 +140,7 @@ function InputWindow({height, mode, setMode, sentenceID}: InputWindowProps) {
                         <Dropdown.Item active={mode === Mode.Edit} onClick={() => setMode(Mode.Edit)} eventKey="inputText">Edit Mode</Dropdown.Item>
                         <Dropdown.Item active={mode === Mode.Annotation} onClick={() => setMode(Mode.Annotation)} eventKey="inputText">Annotation Mode</Dropdown.Item>
                         <Dropdown.Item active={mode === Mode.Provenance} onClick={() => setMode(Mode.Provenance)} eventKey="inputText">Provenance Mode</Dropdown.Item>
+                        <Dropdown.Item active={mode === Mode.Triple} onClick={() => setMode(Mode.Triple)} eventKey="inputText">Triple Mode</Dropdown.Item>
                     </DropdownButton>
                     <Button variant="success"
                             onClick={handleSaveFile}
@@ -178,6 +167,7 @@ function InputWindow({height, mode, setMode, sentenceID}: InputWindowProps) {
                                 width="100%"
                                 height="100%"
                                 value={fileContent}
+                                // wrapEnabled={true}
                                 editorProps={{ $blockScrolling: false}}
                             />
                         )}
@@ -190,12 +180,28 @@ function InputWindow({height, mode, setMode, sentenceID}: InputWindowProps) {
                             />
                         )}
                         {!error && mode === Mode.Provenance && (
-                            <DocumentProvenanceViewer
-                                              document={data?.files_by_pk?.document}
-                                              summaryDocument={data?.files_by_pk?.summary_document}
-                                              sentenceID={sentenceID}
-                                              showNER={showNER}
-                                              showTriples={showTriples}
+                            <ProvenanceViewer
+                                summaryDocument={data?.files_by_pk?.summary_document}
+                                inputDocument={data?.files_by_pk?.document}
+                                visualizeSummary={false}
+                                isSummarySentence={isSummarySentence}
+                                setIsSummarySentence={setIsSummarySentence}
+                                sentenceID={sentenceID}
+                                setSentenceID={setSentenceID}
+                                showNER={showNER}
+                                showTriples={showTriples}
+                                showFaithfulness={false}
+                            />
+                        )}
+                        {!error && mode === Mode.Triple && (
+                            <TripleViewer
+                                summaryDocument={data?.files_by_pk?.summary_document}
+                                inputDocument={data?.files_by_pk?.document}
+                                visualizeSummary={false}
+                                isSummaryTriple={isSummarySentence}
+                                setIsSummaryTriple={setIsSummarySentence}
+                                tripleID={sentenceID}
+                                setTripleID={setSentenceID}
                             />
                         )}
                     </Tab.Pane>

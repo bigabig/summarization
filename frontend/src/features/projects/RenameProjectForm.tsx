@@ -3,7 +3,7 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 import {useRenameProjectById} from "../../graphql/projects";
-import {GetProjectById_projects_by_pk} from "../../graphql/types/projects-generated-types";
+import {GetProjectById_projects_by_pk} from "../../types/projects-generated-types";
 
 type RenameProjectFormProps = {
     project: GetProjectById_projects_by_pk

@@ -12,8 +12,9 @@ export interface GetAllProjectsQuery_projects {
   graph_up_to_date: boolean;
   id: number;
   name: string;
-  summary_content: string | null;
-  summary_up_to_date: boolean;
+  document: any | null;
+  summary_document: any | null;
+  documents_up_to_date: boolean | null;
   created_at: any;
   updated_at: any;
 }
@@ -35,8 +36,9 @@ export interface GetProjectById_projects_by_pk {
   graph_up_to_date: boolean;
   id: number;
   name: string;
-  summary_content: string | null;
-  summary_up_to_date: boolean;
+  document: any | null;
+  summary_document: any | null;
+  documents_up_to_date: boolean | null;
   created_at: any;
   updated_at: any;
 }
@@ -62,8 +64,9 @@ export interface AddProject_insert_projects_one {
   graph_up_to_date: boolean;
   id: number;
   name: string;
-  summary_content: string | null;
-  summary_up_to_date: boolean;
+  document: any | null;
+  summary_document: any | null;
+  documents_up_to_date: boolean | null;
   created_at: any;
   updated_at: any;
 }
@@ -89,8 +92,9 @@ export interface DeleteProject_delete_projects_by_pk {
   graph_up_to_date: boolean;
   id: number;
   name: string;
-  summary_content: string | null;
-  summary_up_to_date: boolean;
+  document: any | null;
+  summary_document: any | null;
+  documents_up_to_date: boolean | null;
   created_at: any;
   updated_at: any;
 }
@@ -116,8 +120,9 @@ export interface RenameProject_update_projects_by_pk {
   graph_up_to_date: boolean;
   id: number;
   name: string;
-  summary_content: string | null;
-  summary_up_to_date: boolean;
+  document: any | null;
+  summary_document: any | null;
+  documents_up_to_date: boolean | null;
   created_at: any;
   updated_at: any;
 }
@@ -129,6 +134,36 @@ export interface RenameProject {
 export interface RenameProjectVariables {
   id: number;
   name?: string | null;
+}
+
+
+/* tslint:disable */
+// This file was automatically generated and should not be edited.
+
+// ====================================================
+// GraphQL mutation operation: UpdateProject
+// ====================================================
+
+export interface UpdateProject_update_projects_by_pk {
+  created_at: any;
+  document: any | null;
+  documents_up_to_date: boolean | null;
+  graph_data: any;
+  graph_up_to_date: boolean;
+  id: number;
+  name: string;
+  summary_document: any | null;
+  updated_at: any;
+}
+
+export interface UpdateProject {
+  update_projects_by_pk: UpdateProject_update_projects_by_pk | null;  // update single row of the table: "projects"
+}
+
+export interface UpdateProjectVariables {
+  id: number;
+  document?: any | null;
+  summary_document?: any | null;
 }
 
 /* tslint:disable */

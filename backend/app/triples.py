@@ -55,7 +55,7 @@ def compute_and_embed_triple_arguments(document, debug=False):
                     'id': triple_id,
                     'text': text,
                     'embedding': embed_sentence(text),
-                    'arguments': parse
+                    'arguments': dict(sorted(parse.items()))
                 })
 
                 global_triple_id2sentence_id.append(sentence['id'])
@@ -72,3 +72,18 @@ def compute_and_embed_triple_arguments(document, debug=False):
 
     document['global_triple_id2sentence_id'] = global_triple_id2sentence_id
     document['global_triple_id2local_triple_id'] = global_triple_id2local_triple_id
+
+
+def example():
+    document = {
+        "sentences": [
+            {
+                "id": 0,
+                "text": "\" I would have a very hard time justifying spending $ 20,000 on a wedding when I could go to Europe , \" one student says."
+            }
+        ]
+    }
+    compute_and_embed_triple_arguments(document)
+    print(document)
+
+# example()

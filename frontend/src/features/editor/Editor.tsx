@@ -6,15 +6,17 @@ import React, {useEffect, useState} from "react";
 import Split from 'react-split';
 import FileToolbar from "../files/FileToolbar";
 import FileList from "../files/FileList";
-import {ProjectAndFileMatch} from "../../graphql/types/ProjectMatch";
+import {ProjectAndFileMatch} from "../../types/ProjectMatch";
 import InputWindow from "./InputWindow";
 import OutputWindow from "../summaries/OutputWindow";
 import useElementSizes from "../../helper/ElementSizes";
+import AllFileEditor, {FilesExistWrapper} from "./AllFileEditor";
 
 export enum Mode {
     Edit,
     Annotation,
-    Provenance
+    Provenance,
+    Triple
 }
 
 export function mode2Text(input: Mode) {
@@ -25,6 +27,8 @@ export function mode2Text(input: Mode) {
             return "Annotation Mode";
         case Mode.Provenance:
             return "Provenance Mode";
+        case Mode.Triple:
+            return "Triple Mode";
         default:
             return "Unkown Mode";
     }
@@ -37,9 +41,11 @@ type FileEditorProps = {
     setMode: React.Dispatch<React.SetStateAction<Mode>>
     sentenceID: number,
     setSentenceID: React.Dispatch<React.SetStateAction<number>>,
+    isSummarySentence: boolean,
+    setIsSummarySentence: React.Dispatch<React.SetStateAction<boolean>>,
 }
 
-function FileEditor({left, heights, mode, setMode, sentenceID, setSentenceID}: FileEditorProps) {
+function FileEditor({left, heights, mode, setMode, sentenceID, setSentenceID, isSummarySentence, setIsSummarySentence}: FileEditorProps) {
     // global url state
     let params = useParams<ProjectAndFileMatch>();
     const projectId: number = Number(params.projectId);
@@ -54,7 +60,7 @@ function FileEditor({left, heights, mode, setMode, sentenceID, setSentenceID}: F
     useEffect(() => {
         setSentenceID(-1); // reset the selected provenance sentence whenever the file changes
         window.dispatchEvent(new Event('resize'));      // fire the resize event whenever the fileId changes, so that components can calculate the correct heights
-    }, [projectId, fileId, setSentenceID])
+    }, [projectId, fileId, setSentenceID, mode])
 
     return (
         <>
@@ -73,13 +79,20 @@ function FileEditor({left, heights, mode, setMode, sentenceID, setSentenceID}: F
                         <InputWindow height={(height - mainNav - inputNav - inputFooterNav)}
                                      mode={mode}
                                      setMode={setMode}
-                                     sentenceID={sentenceID} />
+                                     sentenceID={sentenceID}
+                                     setSentenceID={setSentenceID}
+                                     isSummarySentence={isSummarySentence}
+                                     setIsSummarySentence={setIsSummarySentence}
+                        />
                     )}
                     {!left && (
                         <OutputWindow height={(height - mainNav - outputNav - outputFooterNav)}
                                       mode={mode}
                                       sentenceID={sentenceID}
-                                      setSentenceID={setSentenceID} />
+                                      setSentenceID={setSentenceID}
+                                      isSummarySentence={isSummarySentence}
+                                      setIsSummarySentence={setIsSummarySentence}
+                        />
                     )}
                 </div>
             )}
@@ -101,6 +114,7 @@ function Editor() {
     const [height, mainNav, fileNav, inputNav, inputFooterNav, outputNav, outputFooterNav] = useElementSizes();
     const [editorMode, setEditorMode] = useState<Mode>(Mode.Edit)
     const [sentenceID, setSentenceID] = useState(-1);
+    const [isSummarySentence, setIsSummarySentence] = useState(true);
 
     // remote state
     const {loading: projectLoading, error: projectError, data: projectData} = useGetProjectById({id: projectId})
@@ -117,7 +131,7 @@ function Editor() {
                 <p>This project does not exist.</p>
             )}
             {!projectError && !projectLoading && projectData && (
-                <Split className="wrap" sizes={[12, 44, 44]}>
+                <Split className="wrap" sizes={[12, 88]}>
                     <div className="comp">
                         <FileToolbar />
                         <FileList height={(height - mainNav - fileNav)} />
@@ -158,50 +172,47 @@ function Editor() {
                         {/*</ul>*/}
                     </div>
 
-                    <Switch>
-                        <Route path={`${match.path}/file/:fileId`}>
-                            <div className="comp">
-                                <FileEditor left={true}
-                                            heights={[height, mainNav, inputNav, inputFooterNav, outputNav, outputFooterNav]}
-                                            mode={editorMode}
-                                            setMode={setEditorMode}
-                                            sentenceID={sentenceID}
-                                            setSentenceID={setSentenceID}
-                                />
-                            </div>
+                    <div className="comp">
+                        <Switch>
+                            <Route path={`${match.path}/file/:fileId`}>
+                                <Split className="wrap" sizes={[50, 50]}>
+                                    <div className="comp">
+                                        <FileEditor left={true}
+                                                    heights={[height, mainNav, inputNav, inputFooterNav, outputNav, outputFooterNav]}
+                                                    mode={editorMode}
+                                                    setMode={setEditorMode}
+                                                    sentenceID={sentenceID}
+                                                    setSentenceID={setSentenceID}
+                                                    isSummarySentence={isSummarySentence}
+                                                    setIsSummarySentence={setIsSummarySentence}
+                                        />
+                                    </div>
 
-                            <div className="comp">
-                                <FileEditor left={false}
-                                            heights={[height, mainNav, inputNav, inputFooterNav, outputNav, outputFooterNav]}
-                                            mode={editorMode}
-                                            setMode={setEditorMode}
-                                            sentenceID={sentenceID}
-                                            setSentenceID={setSentenceID}
-                                />
-                            </div>
-                        </Route>
+                                    <div className="comp">
+                                        <FileEditor left={false}
+                                                    heights={[height, mainNav, inputNav, inputFooterNav, outputNav, outputFooterNav]}
+                                                    mode={editorMode}
+                                                    setMode={setEditorMode}
+                                                    sentenceID={sentenceID}
+                                                    setSentenceID={setSentenceID}
+                                                    isSummarySentence={isSummarySentence}
+                                                    setIsSummarySentence={setIsSummarySentence}
+                                        />
+                                    </div>
+                                </Split>
+                            </Route>
 
-                        <Route path={`${match.path}/all`}>
-                            <div className="comp">
-                                <p>ALL</p>
-                            </div>
+                            <Route path={`${match.path}/all`}>
+                                <FilesExistWrapper>
+                                    <AllFileEditor />
+                                </FilesExistWrapper>
+                            </Route>
 
-                            <div className="comp">
-                                <p>ALL</p>
-                            </div>
-                        </Route>
-
-                        <Route path={match.path}>
-                            <div className="comp">
+                            <Route path={match.path}>
                                 <h3>Please select a file.</h3>
-                            </div>
-
-                            <div className="comp">
-                                <h3>Please select a file.</h3>
-                            </div>
-                        </Route>
-
-                    </Switch>
+                            </Route>
+                        </Switch>
+                    </div>
 
                 </Split>
             )}

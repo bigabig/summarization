@@ -1,30 +1,23 @@
 import {gql, useMutation, useQuery} from "@apollo/client";
-import * as Types from "./types/files-generated-types";
+import * as Types from "../types/files-generated-types";
 
-// const GET_ALL_FILES_QUERY = gql`
-//   query GetAllFiles {
-//     files(order_by: {name: asc}) {
-//       annotation_data
-//       annotation_up_to_date
-//       content
-//       sentences
-//       created_at
-//       graph_data
-//       graph_up_to_date
-//       id
-//       name
-//       project_id
-//       summary_content
-//       summary_up_to_date
-//       summary_annotation_data
-//       summary_alignment_data
-//       summary_triple_data
-//       summary_sentences
-//       triple_data
-//       updated_at
-//     }
-//   }
-// `;
+const GET_ALL_FILES_QUERY = gql`
+  query GetAllFiles($_eq: Int!) {
+    files(where: {project_id: {_eq: $_eq}}) {
+      id
+      project_id
+      name
+      content
+      graph_data
+      graph_up_to_date
+      document
+      summary_document
+      documents_up_to_date
+      updated_at
+      created_at
+    }
+  }
+`;
 
 const GET_FILE_BY_ID_QUERY = gql`
   query GetFileById($id: Int!, $projectId: Int!) {
@@ -117,8 +110,8 @@ const RENAME_FILE_MUTATION = gql`
 `;
 
 const EDIT_FILE_MUTATION = gql`
-  mutation EditFile($id: Int!, $projectId: Int!, $content: String, $document: json) {
-    update_files_by_pk(pk_columns: {id: $id, project_id: $projectId}, _set: {content: $content, documents_up_to_date: false, document: $document}) {
+  mutation EditFile($id: Int!, $projectId: Int!, $content: String) {
+    update_files_by_pk(pk_columns: {id: $id, project_id: $projectId}, _set: {content: $content, documents_up_to_date: false}) {
       id
       project_id
       name
@@ -186,10 +179,15 @@ export function useGetFilesByProjectId({ _eq }: Types.GetFilesByProjectIdVariabl
     return {loading, error, data};
 }
 
-// export function useGetAllFiles() {
-//     const {loading, error, data} = useQuery<Types.GetAllFiles>(GET_ALL_FILES_QUERY);
-//     return {loading, error, data};
-// }
+export function useGetAllFiles({ _eq }: Types.GetAllFilesVariables) {
+    const {loading, error, data} = useQuery<Types.GetAllFiles, Types.GetAllFilesVariables>(
+        GET_ALL_FILES_QUERY, {
+            variables: {
+                _eq: _eq
+            }
+        });
+    return {loading, error, data};
+}
 
 
 export function useAddFile(projectId: number) {

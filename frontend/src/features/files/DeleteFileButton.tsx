@@ -6,7 +6,7 @@ import {faTrash} from "@fortawesome/free-solid-svg-icons";
 import React from "react";
 import {useHistory, useRouteMatch} from "react-router-dom";
 import {useDeleteFile, useGetFileByIdNew} from "../../graphql/files";
-import {ProjectAndFileMatch, ProjectMatch} from "../../graphql/types/ProjectMatch";
+import {ProjectAndFileMatch, ProjectMatch} from "../../types/ProjectMatch";
 
 function DeleteFileButton() {
     // global url state

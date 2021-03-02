@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from "react";
 import AnnotatedSentence from "./AnnotatedSentence";
 import TripleSentence from "./TripleSentence";
-import heatmap from "../../helper/heatmapColorscale";
-import {MyDocument} from "../../graphql/types/document";
+import {heatmap} from "../../helper/colorscales";
+import {MyDocument} from "../../types/document";
 
 
 type SummaryProvenanceViewerProps = {
@@ -81,7 +81,8 @@ function SummaryProvenanceViewer({summaryDocument, sentenceID, setSentenceID, sh
     } else if (showTriples) {
         content = summaryDocument.sentences.map((sentence, index) => (
             <p key={index} id={'summary-sentence-'+index}
-               onClick={() => handleClick(index)} className="summary-sentence"
+               onClick={() => handleClick(index)}
+               className="summary-sentence"
                style={{
                    backgroundColor: index === sentenceID ? heatmap(1) : "",
                    opacity: selectedTripleSentence >= 0 && index !== selectedTripleSentence ? '0.3333' : '1',

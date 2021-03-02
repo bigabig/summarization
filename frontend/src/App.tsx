@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Switch, Redirect } from "react-router-d
 import ProjectManager from "./features/projects/ProjectManager";
 import Navigation from "./features/navigation/Navigation";
 import Editor from "./features/editor/Editor";
+import DocumentEditor from "./features/editor/DocumentEditor";
 
 function App() {
     return (
@@ -11,6 +12,7 @@ function App() {
             <Switch>
                 <Route path="/projects" component={ProjectManager} />
                 <Route path={"/project/:projectId"} component={Editor} />
+                <Route path={"/editor"} component={DocumentEditor} />
                 <Redirect to="/projects" />
             </Switch>
         </Router>

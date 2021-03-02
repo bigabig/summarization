@@ -7,7 +7,7 @@ from flask import request
 from flask_cors import CORS
 
 import summarization as summarization
-from pipeline import full_pipeline, annotation_pipeline
+from pipeline import full_pipeline, annotation_pipeline, all_pipeline, align_pipeline
 from extract import pdf_to_text, txt_to_text, url_to_text
 
 app = Flask(__name__)
@@ -71,6 +71,64 @@ def summarize():
     summarization.switch_method(content['method'])
 
     input_document, summary_document = full_pipeline(input_text=content["text"], length=content["length"])
+
+    response = app.response_class(
+        response=json.dumps({
+                    'summary_document': summary_document,
+                    'input_document': input_document
+                }, default=lambda o: '<not serializable>'),
+        status=200,
+        mimetype='application/json'
+    )
+    return response
+
+
+@app.route('/summarizeAll', methods=['POST'])
+def summarize_all():
+    if not request.is_json:
+        error = "Request is not a JSON object."
+        print(error)
+        return make_error(400, error)
+
+    content = request.get_json()
+    print(content)
+
+    if 'data' not in content or 'length' not in content or 'method' not in content:
+        error = "Request is malformed! Required fields: data, length, method."
+        print(error)
+        return make_error(400, error)
+
+    summarization.switch_method(content['method'])
+
+    input_document, summary_document = all_pipeline(data=content["data"], length=content["length"])
+
+    response = app.response_class(
+        response=json.dumps({
+                    'summary_document': summary_document,
+                    'input_document': input_document
+                }, default=lambda o: '<not serializable>'),
+        status=200,
+        mimetype='application/json'
+    )
+    return response
+
+
+@app.route('/align', methods=['POST'])
+def align():
+    if not request.is_json:
+        error = "Request is not a JSON object."
+        print(error)
+        return make_error(400, error)
+
+    content = request.get_json()
+    print(content)
+
+    if 'data' not in content:
+        error = "Request is malformed! Required fields: data"
+        print(error)
+        return make_error(400, error)
+
+    input_document, summary_document = align_pipeline(data=content["data"])
 
     response = app.response_class(
         response=json.dumps({

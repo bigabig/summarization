@@ -14,7 +14,7 @@ import {useAddFile} from "../../graphql/files";
 import axios from 'axios';
 import Spinner from "react-bootstrap/esm/Spinner";
 import {useRouteMatch} from "react-router-dom";
-import {ProjectMatch} from "../../graphql/types/ProjectMatch";
+import {ProjectMatch} from "../../types/ProjectMatch";
 
 function isValidHttpUrl(string: string) {
     let url;

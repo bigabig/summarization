@@ -19,18 +19,22 @@ import {Mode} from "../editor/Editor";
 import SummaryProvenanceViewer from "../provenance/SummaryProvenanceViewer";
 import axios, {AxiosResponse} from "axios";
 import {useRouteMatch} from "react-router-dom";
-import {ProjectAndFileMatch} from "../../graphql/types/ProjectMatch";
-import {NewSummarizationResult} from "../../graphql/types/results";
+import {ProjectAndFileMatch} from "../../types/ProjectMatch";
+import {NewSummarizationResult} from "../../types/results";
+import ProvenanceViewer from "../provenance/ProvenanceViewer";
+import TripleViewer from "../provenance/TripleViewer";
 
 type OutputWindowProps = {
     height: number,
     mode: Mode
     sentenceID: number,
     setSentenceID: React.Dispatch<React.SetStateAction<number>>,
+    isSummarySentence: boolean,
+    setIsSummarySentence: React.Dispatch<React.SetStateAction<boolean>>,
 }
 
 
-function OutputWindow({height, mode, sentenceID, setSentenceID}: OutputWindowProps) {
+function OutputWindow({height, mode, sentenceID, setSentenceID, isSummarySentence, setIsSummarySentence}: OutputWindowProps) {
     let match = useRouteMatch<ProjectAndFileMatch>();
     const fileId: number = Number(match.params.fileId);
     const projectId: number = Number(match.params.projectId);
@@ -50,16 +54,22 @@ function OutputWindow({height, mode, sentenceID, setSentenceID}: OutputWindowPro
         setShowNER(!showNER)
         if(!showNER) {
             setShowTriples(false);
+            setShowFaithfulness(false);
         }
     }
     const handleTriplesChange = () => {
         setShowTriples(!showTriples);
         if(!showTriples) {
             setShowNER(false);
+            setShowFaithfulness(false);
         }
     }
     const handleFaithfulnessChange = () => {
         setShowFaithfulness(!showFaithfulness);
+        if(!showFaithfulness) {
+            setShowNER(false);
+            setShowTriples(false);
+        }
     }
 
     const handleSummarize = async () => {
@@ -180,12 +190,28 @@ function OutputWindow({height, mode, sentenceID, setSentenceID}: OutputWindowPro
                     </>
                 )}
                 {mode === Mode.Provenance && (
-                    <SummaryProvenanceViewer
-                                      summaryDocument={fileData?.files_by_pk?.summary_document}
-                                      sentenceID={sentenceID}
-                                      setSentenceID={setSentenceID}
-                                      showNER={showNER}
-                                      showTriples={showTriples}
+                    <ProvenanceViewer
+                                    summaryDocument={fileData?.files_by_pk?.summary_document}
+                                    inputDocument={fileData?.files_by_pk?.document}
+                                    visualizeSummary={true}
+                                    isSummarySentence={isSummarySentence}
+                                    setIsSummarySentence={setIsSummarySentence}
+                                    sentenceID={sentenceID}
+                                    setSentenceID={setSentenceID}
+                                    showNER={showNER}
+                                    showTriples={showTriples}
+                                    showFaithfulness={showFaithfulness}
+                    />
+                )}
+                {mode === Mode.Triple && (
+                    <TripleViewer
+                        summaryDocument={fileData?.files_by_pk?.summary_document}
+                        inputDocument={fileData?.files_by_pk?.document}
+                        visualizeSummary={true}
+                        isSummaryTriple={isSummarySentence}
+                        setIsSummaryTriple={setIsSummarySentence}
+                        tripleID={sentenceID}
+                        setTripleID={setSentenceID}
                     />
                 )}
                 </>

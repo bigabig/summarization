@@ -1,0 +1,9 @@
+version: '3.6'
+services:
+  entailment:
+    image: bigabig/entailment:latest
+    ports:
+      - "4444:4444"
+    volumes:
+      - ./entailment_models:/models
+

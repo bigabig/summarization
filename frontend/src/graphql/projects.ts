@@ -1,6 +1,6 @@
 import {gql, useMutation, useQuery} from "@apollo/client";
-import * as Types from './types/projects-generated-types';
-import * as ProjectTypes from "./types/projects-generated-types";
+import * as Types from '../types/projects-generated-types';
+import * as ProjectTypes from "../types/projects-generated-types";
 
 const GET_ALL_PROJECTS_QUERY = gql`
   query GetAllProjectsQuery {
@@ -9,8 +9,9 @@ const GET_ALL_PROJECTS_QUERY = gql`
       graph_up_to_date
       id
       name
-      summary_content
-      summary_up_to_date
+      document
+      summary_document
+      documents_up_to_date
       created_at
       updated_at
     }
@@ -24,8 +25,9 @@ const GET_PROJECT_BY_ID_QUERY = gql`
       graph_up_to_date
       id
       name
-      summary_content
-      summary_up_to_date
+      document
+      summary_document
+      documents_up_to_date
       created_at
       updated_at
     }
@@ -39,8 +41,9 @@ const ADD_PROJECT_MUTATION = gql`
       graph_up_to_date
       id
       name
-      summary_content
-      summary_up_to_date
+      document
+      summary_document
+      documents_up_to_date
       created_at
       updated_at
     }
@@ -54,8 +57,9 @@ const DELETE_PROJECT_MUTATION = gql`
       graph_up_to_date
       id
       name
-      summary_content
-      summary_up_to_date
+      document
+      summary_document
+      documents_up_to_date
       created_at
       updated_at
     }
@@ -69,9 +73,26 @@ const RENAME_PROJECT_MUTATION = gql`
       graph_up_to_date
       id
       name
-      summary_content
-      summary_up_to_date
+      document
+      summary_document
+      documents_up_to_date
       created_at
+      updated_at
+    }
+  }
+`;
+
+const UPDATE_PROJECT_MUTATION = gql`
+  mutation UpdateProject($id: Int!, $document: json, $summary_document: json) {
+    update_projects_by_pk(pk_columns: {id: $id}, _set: {document: $document, documents_up_to_date: true, summary_document: $summary_document}) {
+      created_at
+      document
+      documents_up_to_date
+      graph_data
+      graph_up_to_date
+      id
+      name
+      summary_document
       updated_at
     }
   }
@@ -115,5 +136,10 @@ export function useDeleteProject() {
 
 export function useRenameProjectById() {
     const [mutate, { data, error, loading }] = useMutation<Types.RenameProject, Types.RenameProjectVariables>(RENAME_PROJECT_MUTATION)
+    return { mutate, data, error, loading };
+}
+
+export function useUpdateProjectById() {
+    const [mutate, { data, error, loading }] = useMutation<Types.UpdateProject, Types.UpdateProjectVariables>(UPDATE_PROJECT_MUTATION)
     return { mutate, data, error, loading };
 }

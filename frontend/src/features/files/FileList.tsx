@@ -2,7 +2,7 @@ import React, {CSSProperties} from "react";
 import FileListEntry from "./FileListEntry";
 import {useGetFilesByProjectId} from "../../graphql/files";
 import {NavLink, useRouteMatch} from "react-router-dom";
-import {ProjectMatch} from "../../graphql/types/ProjectMatch";
+import {ProjectMatch} from "../../types/ProjectMatch";
 
 type FileListProps = {
     height: number,

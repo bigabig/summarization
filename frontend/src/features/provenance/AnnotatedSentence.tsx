@@ -1,7 +1,7 @@
-import {Span} from "../../graphql/types/annotations";
+import {Span} from "../../types/annotations";
 import React from "react";
 import parse from 'html-react-parser';
-import {Sentence} from "../../graphql/types/sentence";
+import {Sentence} from "../../types/sentence";
 
 type AnnotatedSentenceProps = {
     sentence: Sentence

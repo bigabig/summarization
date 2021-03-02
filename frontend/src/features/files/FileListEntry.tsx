@@ -4,7 +4,7 @@ import React from "react";
 import {useDeleteFile, useGetFileById} from "../../graphql/files";
 import RenameFileForm, {RenameFileFormMode} from "./RenameFileForm";
 import {NavLink, useHistory, useRouteMatch} from "react-router-dom";
-import {ProjectMatch} from "../../graphql/types/ProjectMatch";
+import {ProjectMatch} from "../../types/ProjectMatch";
 
 type FileListEntryProps = {
     fileId: number,

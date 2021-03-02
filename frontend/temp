@@ -1,0 +1,19 @@
+
+
+                        {/*<EditorPane pill={0}>*/}
+                        {/*    <EditorContent mode={0}>*/}
+                        {/*        <p>Text Edit</p>*/}
+                        {/*    </EditorContent>*/}
+                        {/*    <EditorContent mode={1}>*/}
+                        {/*        <p>Text Provenance</p>*/}
+                        {/*    </EditorContent>*/}
+                        {/*</EditorPane>*/}
+
+                        {/*<EditorPane pill={1}>*/}
+                        {/*    <EditorContent mode={0}>*/}
+                        {/*        <p>Graph Edit</p>*/}
+                        {/*    </EditorContent>*/}
+                        {/*    <EditorContent mode={1}>*/}
+                        {/*        <p>Graph Provenance</p>*/}
+                        {/*    </EditorContent>*/}
+                        {/*</EditorPane>*/}

@@ -1,6 +1,7 @@
 from transformers import BartForConditionalGeneration, AutoTokenizer
 
-print("Loading backend model...")
+
+print("Loading summarization model...")
 method = "sshleifer/distilbart-cnn-12-6"
 tokenizer = AutoTokenizer.from_pretrained("sshleifer/distilbart-cnn-12-6")
 model = BartForConditionalGeneration.from_pretrained("sshleifer/distilbart-cnn-12-6")
@@ -23,6 +24,7 @@ def switch_method(new_method):
 
 
 def summarize(text, length):
+    text = text.replace("\n", " ")
     inputs = tokenizer.encode(text, return_tensors="pt", truncation=True, max_length=512)
     outputs = model.generate(inputs, max_length=length, min_length=40, length_penalty=2.0, num_beams=4, early_stopping=True, )
     summary = tokenizer.decode(outputs[0], skip_special_tokens=True)

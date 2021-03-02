@@ -4,10 +4,40 @@
 // This file was automatically generated and should not be edited.
 
 // ====================================================
-// GraphQL query operation: GetFileById
+// GraphQL query operation: GetAllFiles
 // ====================================================
 
 import {MyDocument} from "./document";
+
+export interface GetAllFiles_files {
+  id: number;
+  project_id: number;
+  name: string;
+  content: string;
+  graph_data: any;
+  graph_up_to_date: boolean;
+  document: MyDocument | null;
+  summary_document: MyDocument | null;
+  documents_up_to_date: boolean;
+  updated_at: any;
+  created_at: any;
+}
+
+export interface GetAllFiles {
+  files: GetAllFiles_files[];  // fetch data from the table: "files"
+}
+
+export interface GetAllFilesVariables {
+  _eq: number;
+}
+
+
+/* tslint:disable */
+// This file was automatically generated and should not be edited.
+
+// ====================================================
+// GraphQL query operation: GetFileById
+// ====================================================
 
 export interface GetFileById_files_by_pk {
   id: number;
@@ -189,7 +219,6 @@ export interface EditFileVariables {
   id: number;
   projectId: number;
   content?: string | null;
-  document?: any | null;
 }
 
 

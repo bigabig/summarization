@@ -6,11 +6,11 @@ import {useGetFileById, useRenameFileById} from "../../graphql/files";
 import Dropdown from "react-bootstrap/Dropdown";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faPen} from "@fortawesome/free-solid-svg-icons";
-import {GetFileById} from "../../graphql/types/files-generated-types";
+import {GetFileById} from "../../types/files-generated-types";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
 import {useRouteMatch} from "react-router-dom";
-import {ProjectMatch} from "../../graphql/types/ProjectMatch";
+import {ProjectMatch} from "../../types/ProjectMatch";
 
 export enum RenameFileFormMode {
     Button,
