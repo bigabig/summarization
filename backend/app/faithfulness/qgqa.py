@@ -1,4 +1,7 @@
 import requests
+import os
+
+QA_API = os.environ.get('QA_API', default="http://localhost:6666/qgqa")
 
 
 def calculate_qa_score(summary_document, source_document):
@@ -7,7 +10,7 @@ def calculate_qa_score(summary_document, source_document):
 
     # make request
     # this api generates questions based on text1 and answers them using text1 (this answer) and using text2 (other_answer)
-    response = requests.post(f"http://localhost:6666/qgqa", json={
+    response = requests.post(QA_API, json={
         "text1": summary,
         "text2": source
     })
@@ -16,26 +19,26 @@ def calculate_qa_score(summary_document, source_document):
     if response.status_code == 200:
 
         # init
-        for result in json_result['qa']:
+        for result in json_result['qaqg']:
             result['this_answer_sentences'] = []
             result['other_answer_sentences'] = []
 
         # find out in which sentences the answer occurs
         for sentence_id, sentence in enumerate(summary_document['sentences']):
             text = sentence['text']
-            for result in json_result['qa']:
+            for result in json_result['qaqg']:
                 answer = result['this_answer']  # answer by the summary
                 if text.find(answer) != -1:
                     result['this_answer_sentences'].append(sentence_id)
 
         for sentence_id, sentence in enumerate(source_document['sentences']):
             text = sentence['text']
-            for result in json_result['qa']:
+            for result in json_result['qaqg']:
                 answer = result['other_answer']  # answer by the source
                 if text.find(answer) != -1:
                     result['other_answer_sentences'].append(sentence_id)
 
-        summary_document['qa'] = json_result['qa']
+        summary_document['qa'] = json_result['qaqg']
         summary_document['qa_score'] = json_result['score']
         # {'qa': [{'summary_answer': '300 metres', 'source_answer': '300 metres', 'question': 'The Eiffel Tower was the first structure to reach a height of what?'}, ... ], 'score': 0.8}
 

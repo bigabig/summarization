@@ -1,5 +1,8 @@
 import requests
 import json
+import os
+
+BERTSCORE_API = os.environ.get('BERTSCORE_API', default="http://localhost:4444/bertscore")
 
 
 def calculate_bertscore(source_document, summary_document):
@@ -12,7 +15,7 @@ def calculate_bertscore(source_document, summary_document):
     obj = json.loads(obj)
 
     # make request
-    response = requests.post(f"http://localhost:4444/bertscore", json=obj)
+    response = requests.post(BERTSCORE_API, json=obj)
 
     json_result = response.json()
     # returns

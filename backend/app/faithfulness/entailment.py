@@ -1,5 +1,8 @@
 import requests
 import json
+import os
+
+ENTAILMENT_API = os.environ.get('ENTAILMENT_API', default="http://localhost:5555/entailment")
 
 
 def calculate_entailment_score(source_document, entailed_document, method):
@@ -13,7 +16,7 @@ def calculate_entailment_score(source_document, entailed_document, method):
     obj = json.loads(obj)
 
     # make request
-    response = requests.post(f"http://localhost:5555/entailment", json=obj)
+    response = requests.post(ENTAILMENT_API, json=obj)
 
     json_result = response.json()
     # returns

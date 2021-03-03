@@ -30,12 +30,15 @@ def faithfulness_pipeline(data):
     align_sentences(summary_document, source_document)
 
     # step 6: compute bertscore
+    print("calculating bertscore...")
     calculate_bertscore(summary_document, source_document)
 
     # step 7: compute entailment
+    print("calculating entailment...")
     calculate_entailment(summary_document, source_document, method=1)
 
     # step 8: compute qgqa
+    print("calculating qgqa...")
     calculate_qa(summary_document, source_document)
 
     return source_document, summary_document
