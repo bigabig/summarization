@@ -63,7 +63,7 @@ def calculate_word_embeddings(document):
         word_embeddings.extend([(token_tuple[0], torch.stack([intermediate_hidden_state[sentence_id][token_id + 1] for token_id in token_tuple[1]]).mean(0).detach()) for token_tuple in mapping])
 
         # also get the token embeddings
-        important_tokens = [token_id for token_tuple in word_to_token_mappings[2] for token_id in token_tuple[1]]
+        important_tokens = [token_id for token_tuple in mapping for token_id in token_tuple[1]]
         token_embeddings.extend([intermediate_hidden_state[sentence_id][token_id + 1].detach() for token_id in important_tokens])
 
     words = [t[0] for t in word_embeddings]
