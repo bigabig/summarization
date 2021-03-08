@@ -22,7 +22,7 @@ def calculate_entailment_scores_sentencewise(source_document, entailed_document)
     inputs = tokenizer(sentence_pairs, return_tensors="pt", padding=True)
     outputs = model(**inputs)  # [contradiction_score, neutral_score, entailment_score]
 
-    all_scores = F.softmax(outputs['logits'].detach())
+    all_scores = F.softmax(outputs['logits'].detach(), dim=1)
     all_scores = all_scores.reshape([num_source_sentences, num_entailed_sentences, 3])
 
     # for every summary sentence find source sentences that have the highest entailment score
@@ -60,7 +60,7 @@ def calculate_entailment_scores_documentwise(source_document, entailed_document)
     inputs = tokenizer(sentence_pairs, return_tensors="pt", padding=True)
     outputs = model(**inputs)  # [contradiction_score, neutral_score, entailment_score]
 
-    all_scores = F.softmax(outputs['logits'].detach())
+    all_scores = F.softmax(outputs['logits'].detach(), dim=1)
 
     # save results
     for index, entailed_sentence in enumerate(entailed_document['sentences']):
@@ -83,12 +83,16 @@ def calculate_entailment_scores_documentwise(source_document, entailed_document)
 def calculate_entailment_scores_similarsentences(source_document, entailed_document):
     results = []  # results stores 'entailment' and 'entailed_by' for each sentence
 
+    # select the top k = 3 sentences
+    num_sentences = len(source_document['sentences'])
+    k = 3 if num_sentences >= 3 else num_sentences
+
     # construct pairs consisting of a summary sentence and the k most similar source sentences
     similar_sentences = torch.tensor(entailed_document['sentence_alignment'])
     sentence_pairs = []
     for idx, entailed_sentence in enumerate(entailed_document['sentences']):
         # get the k most similar source sentences
-        indices = torch.topk(similar_sentences[idx], k=3, largest=True).indices
+        indices = torch.topk(similar_sentences[idx], k=k, largest=True).indices
 
         # append the most similar sentences
         text = " ".join([source_document['sentences'][i]['text'] for i in indices])
@@ -104,7 +108,7 @@ def calculate_entailment_scores_similarsentences(source_document, entailed_docum
     inputs = tokenizer(sentence_pairs, return_tensors="pt", padding=True)
     outputs = model(**inputs)  # [contradiction_score, neutral_score, entailment_score]
 
-    all_scores = F.softmax(outputs['logits'].detach())
+    all_scores = F.softmax(outputs['logits'].detach(), dim=1)
 
     # save results
     for index, entailed_sentence in enumerate(entailed_document['sentences']):
@@ -120,10 +124,13 @@ def calculate_entailment_scores_similarsentences(source_document, entailed_docum
 
 def calculate_entailment(source_document, entailed_document, method=1):
     if method == 0:
+        print("Sentence wise")
         sentence_results, document_score = calculate_entailment_scores_sentencewise(source_document, entailed_document)
     elif method == 1:
+        print("Top-sentence wise")
         sentence_results, document_score = calculate_entailment_scores_similarsentences(source_document, entailed_document)
     elif method == 2:
+        print("Document wise")
         sentence_results, document_score = calculate_entailment_scores_documentwise(source_document, entailed_document)
     else:
         print("INVALID ENTAILMENT METHOD!!!")
