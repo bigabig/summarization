@@ -1,9 +1,10 @@
-import React, {useLayoutEffect, useState} from "react";
+import React, {useContext, useLayoutEffect, useState} from "react";
 import {MyDocument} from "../../types/document";
 import {Entailments} from "../../types/entailments";
 import {OverlayTrigger} from "react-bootstrap";
 import Tooltip from "react-bootstrap/Tooltip";
 import {colormap, highlightColorMap} from "../../helper/colorscales";
+import {FaithfulnesSettingsContext} from "../editor/DocumentEditor";
 
 type EntailmentScoresProps = {
     scores: Entailments
@@ -30,16 +31,18 @@ type EntailmentVisualizer = {
     setSentenceID: React.Dispatch<React.SetStateAction<number>>,
     isSummarySentence: boolean
     setIsSummarySentence: React.Dispatch<React.SetStateAction<boolean>>,
+    faithfulnessMode: boolean,
 }
 
 
-function EntailmentVisualizer({visualizeSummary, inputDocument, summaryDocument, sentenceID, setSentenceID, isSummarySentence, setIsSummarySentence}: EntailmentVisualizer) {
+function EntailmentVisualizer({visualizeSummary, inputDocument, summaryDocument, sentenceID, setSentenceID, isSummarySentence, setIsSummarySentence, faithfulnessMode}: EntailmentVisualizer) {
     const document = visualizeSummary ? summaryDocument : inputDocument;
     const otherDocument = visualizeSummary ? inputDocument : summaryDocument;
     const prefix = visualizeSummary ? 'summary-' : 'document-';
     const className = visualizeSummary ? 'summary-sentence' : 'document-sentence';
-    const faithfulnessMode = true;
-    const threshold = 0.98;
+
+    // context
+    const {settings} = useContext(FaithfulnesSettingsContext)
 
     // local state
     const [isHidden, setIsHidden] = useState(true);
@@ -70,7 +73,7 @@ function EntailmentVisualizer({visualizeSummary, inputDocument, summaryDocument,
     const calcBackgroundColor = (index: number) => {
         let color = ""
 
-        if (document && faithfulnessMode === visualizeSummary && document.sentences[index].entailment.entailment < threshold) {
+        if (document && faithfulnessMode === visualizeSummary && document.sentences[index].entailment.entailment < settings.EntailmentThreshold / 100.0) {
             color = colormap(document.sentences[index].entailment.entailment)
         }
 

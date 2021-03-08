@@ -1,0 +1,9 @@
+version: '3'
+services:
+  factcc:
+    image: bigabig/factcc:latest
+    ports:
+      - "7777:4444"
+    volumes:
+      - ./factcc_models:/models
+      - ./factcc_checkpoint:/checkpoint

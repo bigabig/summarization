@@ -15,16 +15,16 @@ type BertScoreSentenceProps = {
     isSummaryWord: boolean,
     visualizeSummary: boolean,
     prefix: string,
-    precisionMode: boolean,
+    faithfulnessMode: boolean,
     threshold: number
 }
 
-function BertScoreSentence({sentence, className, handleClick, selfBertscores, otherBertscores, bertscores, wordId, isSummaryWord, visualizeSummary, prefix, precisionMode, threshold}: BertScoreSentenceProps) {
+function BertScoreSentence({sentence, className, handleClick, selfBertscores, otherBertscores, bertscores, wordId, isSummaryWord, visualizeSummary, prefix, faithfulnessMode, threshold}: BertScoreSentenceProps) {
 
     const calcBackgroundColor = (index: number) => {
         let color = ""
 
-        if (precisionMode === visualizeSummary && selfBertscores && selfBertscores[index] && selfBertscores[index][4] < threshold) {
+        if (faithfulnessMode === visualizeSummary && selfBertscores && selfBertscores[index] && selfBertscores[index][4] < threshold) {
             color = colormap(0)
         }
 
@@ -92,17 +92,16 @@ type BertScoreVisualizerProps = {
     setWordId: React.Dispatch<React.SetStateAction<number>>,
     isSummaryWord: boolean
     setIsSummaryWord: React.Dispatch<React.SetStateAction<boolean>>,
+    faithfulnessMode: boolean
 }
 
-function BertScoreVisualizer({sourceDocument, summaryDocument, visualizeSummary, wordId, setWordId, isSummaryWord, setIsSummaryWord}: BertScoreVisualizerProps) {
+function BertScoreVisualizer({sourceDocument, summaryDocument, visualizeSummary, wordId, setWordId, isSummaryWord, setIsSummaryWord, faithfulnessMode}: BertScoreVisualizerProps) {
     const document = visualizeSummary ? summaryDocument : sourceDocument;
     const prefix = visualizeSummary ? 'bertscore-summary-' : 'bertscore-document-';
     const className = visualizeSummary ? 'summary-sentence' : 'document-sentence';
     const selfBertscores = visualizeSummary ? summaryDocument?.bertscores : sourceDocument?.bertscores;
     const otherBertscores = visualizeSummary ? sourceDocument?.bertscores : summaryDocument?.bertscores;
     const bertscores = isSummaryWord ? summaryDocument?.bertscores : sourceDocument?.bertscores;
-    const precisionMode = true;
-    const threshold = 0.96;
 
     // context
     const { settings } = useContext(FaithfulnesSettingsContext)
@@ -151,7 +150,7 @@ function BertScoreVisualizer({sourceDocument, summaryDocument, visualizeSummary,
                                    otherBertscores={otherBertscores}
                                    visualizeSummary={visualizeSummary}
                                    isSummaryWord={isSummaryWord}
-                                   precisionMode={precisionMode}
+                                   faithfulnessMode={faithfulnessMode}
                                    threshold={settings.BERTScoreThreshold / 100.0}
                 />
             )

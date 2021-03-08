@@ -8,12 +8,18 @@ import Button from "react-bootstrap/Button";
 import Navbar from "react-bootstrap/Navbar";
 import {ModeContext} from "./ModeContext";
 import FaithfulnessSettingsVisualizer from "../settings/FaithfulnessSettingsVisualizer";
+import ButtonGroup from "react-bootstrap/esm/ButtonGroup";
+import OverlayTrigger from "react-bootstrap/esm/OverlayTrigger";
+import Tooltip from "react-bootstrap/esm/Tooltip";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faInfo, faInfoCircle} from "@fortawesome/free-solid-svg-icons";
 
 
 type EditorWrapperProps = {
     children: React.ReactNode
     numModes: number,
     mode2text: (arg: number) => string
+    mode2info: (arg: number) => string
     numPills: number,
     pill2text: (arg: number) => string
     toolbarLabels: string[],
@@ -22,10 +28,12 @@ type EditorWrapperProps = {
     isButtonDisabled: () => boolean,
     handleButtonClick: () => void,
     buttonContent: React.ReactNode,
-    height: string
+    height: string,
+    faithfulnessMode: boolean,
+    setFaithfulnessMode: React.Dispatch<React.SetStateAction<boolean>>,
 }
 
-export function EditorWrapper({children, numModes, numPills, mode2text, pill2text, toolbarLabels, toolbarChecked, toolbarOnChangeFunctions, isButtonDisabled, handleButtonClick, buttonContent, height}: EditorWrapperProps) {
+export function EditorWrapper({children, numModes, numPills, mode2text, mode2info, pill2text, toolbarLabels, toolbarChecked, toolbarOnChangeFunctions, isButtonDisabled, handleButtonClick, buttonContent, height, faithfulnessMode, setFaithfulnessMode}: EditorWrapperProps) {
     const modes: number[] = Array.from(Array(numModes).keys())
     const pills: number[] = Array.from(Array(numPills).keys())
 
@@ -44,7 +52,20 @@ export function EditorWrapper({children, numModes, numPills, mode2text, pill2tex
     ))
 
     const modeDropdowns = modes.map((m, index) => (
-        <Dropdown.Item key={index} active={mode === index} onClick={() => setMode(m)} eventKey="pill-0">{mode2text(m)}</Dropdown.Item>
+        <OverlayTrigger
+            key={index}
+            placement={'right'}
+            overlay={
+                <Tooltip key={index} id={`tooltip-info`}>
+                    {mode2info(m)}
+                </Tooltip>
+            }
+        >
+            <Dropdown.Item key={index} active={mode === index} onClick={() => setMode(m)} eventKey="pill-0">
+                {mode2text(m)}
+            </Dropdown.Item>
+        </OverlayTrigger>
+
     ))
 
     const toolbarForms = toolbarLabels.map((label: string, index: number) => (
@@ -59,31 +80,45 @@ export function EditorWrapper({children, numModes, numPills, mode2text, pill2tex
         />
     ))
 
+    const calcButtonVariant = (faithful: boolean) => {
+        if(faithful === faithfulnessMode) {
+            return "primary"
+        } else {
+            return "light"
+        }
+    }
+
+
     const ContentStyle: CSSProperties = {
         height: height,
         maxHeight: height
     }
     return (
-        <>
+        <ModeContext.Provider value={mode}>
             <Tab.Container id="input-tabs" defaultActiveKey="pill-0">
                 <nav id="input-navigation" className="navbar navbar-expand-lg navbar-light bg-light">
-                    <Nav variant="pills" className="mr-auto" style={NavStyle}>
-                        {navPills}
-                    </Nav>
+                    {navPills.length > 0 && (
+                        <Nav variant="pills" className="mr-auto" style={NavStyle}>
+                            {navPills}
+                        </Nav>
+                    )}
+                    <ButtonGroup aria-label="Basic example" className="mr-auto">
+                        <Button variant={calcButtonVariant(true)} onClick={() => setFaithfulnessMode(true)}>Faithfulness</Button>
+                        <Button variant={calcButtonVariant(false)} onClick={() => setFaithfulnessMode(false)}>Coverage</Button>
+                    </ButtonGroup>
+
                     <DropdownButton variant="outline-secondary" id="dropdown-basic-button" title={mode2text(mode)} className="mr-auto">
                         {modeDropdowns}
                     </DropdownButton>
                     <FaithfulnessSettingsVisualizer name={"tim"} />
                     {buttonContent && (
-                        <Button variant="success" disabled={isButtonDisabled()} onClick={handleButtonClick}>
+                        <Button variant="success" className={"ml-2"} disabled={isButtonDisabled()} onClick={handleButtonClick}>
                             {buttonContent}
                         </Button>
                     )}
                 </nav>
                 <Tab.Content id="input-content" style={ContentStyle}>
-                    <ModeContext.Provider value={mode}>
-                        {children}
-                    </ModeContext.Provider>
+                    {children}
                 </Tab.Content>
             </Tab.Container>
             <Navbar id="input-footer-navigation" expand="lg" variant="light" bg="secondary">
@@ -93,7 +128,7 @@ export function EditorWrapper({children, numModes, numPills, mode2text, pill2tex
                     </Form>
                 </Navbar.Brand>
             </Navbar>
-        </>
+        </ModeContext.Provider>
     );
 }
 

@@ -27,22 +27,22 @@ services:
 #    depends_on:
 #      - "postgres"
 
-  phppgadmin:
-    image: 'docker.io/bitnami/phppgadmin:7-debian-10'
-    ports:
-      - '81:8080'
-      - '443:8443'
-    depends_on:
-      - postgres
-    environment:
-      DATABASE_HOST: postgres
-      DATABASE_PORT_NUMBER: 5432
+#  phppgadmin:
+#    image: 'docker.io/bitnami/phppgadmin:7-debian-10'
+#    ports:
+#      - '81:8080'
+#      - '443:8443'
+#    depends_on:
+#      - postgres
+#    environment:
+#      DATABASE_HOST: postgres
+#      DATABASE_PORT_NUMBER: 5432
 
-  mailhog:
-    image: mailhog/mailhog:v1.0.1
-    ports:
-      - "1025:1025"
-      - "8025:8025"
+#  mailhog:
+#    image: mailhog/mailhog:v1.0.1
+#    ports:
+#      - "1025:1025"
+#      - "8025:8025"
 
   keycloak:
     image: quay.io/keycloak/keycloak:12.0.1

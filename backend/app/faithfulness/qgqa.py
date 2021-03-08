@@ -1,6 +1,9 @@
 import requests
 import os
 
+from app.align import calculate_similarities
+from app.embeddings import embed_sentences
+
 QA_API = os.environ.get('QA_API', default="http://localhost:6666/qgqa")
 
 
@@ -19,6 +22,9 @@ def calculate_qa_score(summary_document, source_document):
     if response.status_code == 200:
 
         # init
+        summary_answers = []
+        source_answers = []
+
         for result in json_result['qaqg']:
             result['this_answer_sentences'] = []
             result['other_answer_sentences'] = []
@@ -28,6 +34,7 @@ def calculate_qa_score(summary_document, source_document):
             text = sentence['text']
             for result in json_result['qaqg']:
                 answer = result['this_answer']  # answer by the summary
+                summary_answers.append(answer)
                 if text.find(answer) != -1:
                     result['this_answer_sentences'].append(sentence_id)
 
@@ -35,8 +42,16 @@ def calculate_qa_score(summary_document, source_document):
             text = sentence['text']
             for result in json_result['qaqg']:
                 answer = result['other_answer']  # answer by the source
+                source_answers.append(answer)
                 if text.find(answer) != -1:
                     result['other_answer_sentences'].append(sentence_id)
+
+        # calculate answer similarity based on bert embeddings
+        summary_answer_embeddings = embed_sentences(summary_answers)
+        source_answer_embeddings = embed_sentences(source_answers)
+        similarities, _ = calculate_similarities(summary_answer_embeddings, source_answer_embeddings)
+        for idx, result in enumerate(json_result['qaqg']):
+            result['similarity_bert'] = similarities[idx][idx]
 
         summary_document['qa'] = json_result['qaqg']
         summary_document['qa_score'] = json_result['score']

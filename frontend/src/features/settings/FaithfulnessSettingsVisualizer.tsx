@@ -7,16 +7,20 @@ import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 import React, {useContext, useState} from "react";
 import Tab from "react-bootstrap/Tab";
-import { Row } from "react-bootstrap";
+import {Row} from "react-bootstrap";
 import Col from "react-bootstrap/Col";
 import Nav from "react-bootstrap/Nav";
 import {FaithfulnesSettingsContext} from "../editor/DocumentEditor";
-import { EntailmentMethod } from "../../types/entailmentmethod";
+import {EntailmentMethod} from "../../types/entailmentmethod";
+import {ModeContext} from "../basic_editor/ModeContext";
+import {QASimilarityMethod} from "../../types/qasimilaritymethod";
 
 export interface FaithfulnessSettings {
     BERTScoreThreshold: number,
     QAThreshold: number,
-    EntailmentMethod: EntailmentMethod
+    QASimilarityMethod: QASimilarityMethod,
+    EntailmentMethod: EntailmentMethod,
+    EntailmentThreshold: number
 }
 
 export type FaithfulnessSettingsProps = {
@@ -26,12 +30,15 @@ export type FaithfulnessSettingsProps = {
 function FaithfulnessSettingsVisualizer({name}: FaithfulnessSettingsProps) {
     // context
     const { settings, setSettings } = useContext(FaithfulnesSettingsContext)
+    const currentMode = useContext(ModeContext)
 
     // local state
     const [show, setShow] = useState(false)
     const [bertscoreThreshold, setBertscoreThreshold] = useState(95);
     const [qaThreshold, setQAThreshold] = useState(90);
+    const [entailmentThreshold, setEntailmentThreshold] = useState(97);
     const [entailmentMethod, setEntailmentMethod] = useState(EntailmentMethod.TopSentencesSentence)
+    const [qaSimilarityMethod, setQaSimilarityMethod] = useState(QASimilarityMethod.F1)
 
     // actions
     const handleClose = () => {
@@ -47,7 +54,9 @@ function FaithfulnessSettingsVisualizer({name}: FaithfulnessSettingsProps) {
         // save settings globally
         setSettings({
             QAThreshold: qaThreshold,
+            QASimilarityMethod: qaSimilarityMethod,
             EntailmentMethod: entailmentMethod,
+            EntailmentThreshold: entailmentThreshold,
             BERTScoreThreshold: bertscoreThreshold
         })
 
@@ -59,10 +68,26 @@ function FaithfulnessSettingsVisualizer({name}: FaithfulnessSettingsProps) {
     const handleQAThresholdChange = (newValue: number) => {
         setQAThreshold(newValue)
     }
+    const handleEntailmentThresholdChange = (newValue: number) => {
+        setEntailmentThreshold(newValue)
+    }
 
 
     const checkSaveDisabled = () => {
         return false;
+    }
+
+    const calcDefaultTab = () => {
+        switch (currentMode) {
+            case 1:
+                return "bertscore"
+            case 2:
+                return "entailment"
+            case 3:
+                return "qa"
+            default:
+                return "bertscore"
+        }
     }
 
 
@@ -77,7 +102,7 @@ function FaithfulnessSettingsVisualizer({name}: FaithfulnessSettingsProps) {
                                 onClick={handleShow}
                                 variant="dark"
                         >
-                            <FontAwesomeIcon icon={faCog}/>
+                            <FontAwesomeIcon icon={faCog}/> Settings
                         </Button>
                     </div>
                 )}
@@ -93,7 +118,7 @@ function FaithfulnessSettingsVisualizer({name}: FaithfulnessSettingsProps) {
                 </Modal.Header>
                 <Modal.Body>
 
-                    <Tab.Container id="left-tabs-settings" defaultActiveKey="bertscore">
+                    <Tab.Container id="left-tabs-settings" defaultActiveKey={calcDefaultTab()}>
                         <Row>
                             <Col sm={3}>
                                 <Nav variant="pills" className="flex-column">
@@ -127,31 +152,41 @@ function FaithfulnessSettingsVisualizer({name}: FaithfulnessSettingsProps) {
                                         <Form>
 
                                             <div className="mb-3">
-                                                <Form.Label>Entailment Method:</Form.Label>
-                                                <Form.Check
-                                                    custom
-                                                    type={"radio"}
-                                                    id='toggle-entailment-method-1'
-                                                    label={`source document -> summary sentence`}
-                                                    checked={entailmentMethod === EntailmentMethod.DocumentSentence}
-                                                    onChange={() => setEntailmentMethod(EntailmentMethod.DocumentSentence)}
-                                                />
-                                                <Form.Check
-                                                    custom
-                                                    type={"radio"}
-                                                    id='toggle-entailment-method-2'
-                                                    label={`top 3 source sentences -> summary sentence`}
-                                                    checked={entailmentMethod === EntailmentMethod.TopSentencesSentence}
-                                                    onChange={() => setEntailmentMethod(EntailmentMethod.TopSentencesSentence)}
-                                                />
-                                                <Form.Check
-                                                    custom
-                                                    type={"radio"}
-                                                    id='toggle-entailment-method-3'
-                                                    label={`source sentence -> summary sentence`}
-                                                    checked={entailmentMethod === EntailmentMethod.SentenceSentence}
-                                                    onChange={() => setEntailmentMethod(EntailmentMethod.SentenceSentence)}
-                                                />
+                                                <Form.Group controlId="formEntailmentThreshold">
+                                                    <Form.Label>Entailment Threshold: {entailmentThreshold}%</Form.Label>
+                                                    <Form.Control type="range"
+                                                                  min={0}
+                                                                  value={entailmentThreshold}
+                                                                  onChange={(event) => handleEntailmentThresholdChange(parseFloat(event.target.value))}/>
+                                                </Form.Group>
+
+                                                <Form.Group controlId="formEntailmentMethod">
+                                                    <Form.Label>Entailment Method:</Form.Label>
+                                                    <Form.Check
+                                                        custom
+                                                        type={"radio"}
+                                                        id='toggle-entailment-method-1'
+                                                        label={`source document -> summary sentence`}
+                                                        checked={entailmentMethod === EntailmentMethod.DocumentSentence}
+                                                        onChange={() => setEntailmentMethod(EntailmentMethod.DocumentSentence)}
+                                                    />
+                                                    <Form.Check
+                                                        custom
+                                                        type={"radio"}
+                                                        id='toggle-entailment-method-2'
+                                                        label={`top 3 source sentences -> summary sentence`}
+                                                        checked={entailmentMethod === EntailmentMethod.TopSentencesSentence}
+                                                        onChange={() => setEntailmentMethod(EntailmentMethod.TopSentencesSentence)}
+                                                    />
+                                                    <Form.Check
+                                                        custom
+                                                        type={"radio"}
+                                                        id='toggle-entailment-method-3'
+                                                        label={`source sentence -> summary sentence`}
+                                                        checked={entailmentMethod === EntailmentMethod.SentenceSentence}
+                                                        onChange={() => setEntailmentMethod(EntailmentMethod.SentenceSentence)}
+                                                    />
+                                                </Form.Group>
                                             </div>
 
                                         </Form>
@@ -166,6 +201,25 @@ function FaithfulnessSettingsVisualizer({name}: FaithfulnessSettingsProps) {
                                                               min={0}
                                                               value={qaThreshold}
                                                               onChange={(event) => handleQAThresholdChange(parseFloat(event.target.value))}/>
+                                            </Form.Group>
+                                            <Form.Group controlId="formQASimilarityMethod">
+                                                <Form.Label>Similarity Metric:</Form.Label>
+                                                <Form.Check
+                                                    custom
+                                                    type={"radio"}
+                                                    id='toggle-qasimilarity-method-1'
+                                                    label={`F1`}
+                                                    checked={qaSimilarityMethod === QASimilarityMethod.F1}
+                                                    onChange={() => setQaSimilarityMethod(QASimilarityMethod.F1)}
+                                                />
+                                                <Form.Check
+                                                    custom
+                                                    type={"radio"}
+                                                    id='toggle-qasimilarity-method-2'
+                                                    label={`Cosine Similarity (BERT Embeddings)`}
+                                                    checked={qaSimilarityMethod === QASimilarityMethod.BERT}
+                                                    onChange={() => setQaSimilarityMethod(QASimilarityMethod.BERT)}
+                                                />
                                             </Form.Group>
                                         </Form>
                                     </Tab.Pane>

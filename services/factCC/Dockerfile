@@ -1,4 +1,4 @@
-# docker build -t bigabig/qgqa:latest .
+# docker build -t bigabig/factcc:latest .
 
 FROM python:3.8
 
@@ -11,9 +11,9 @@ WORKDIR /app
 
 ENV PYTORCH_TRANSFORMERS_CACHE=/models
 
-RUN pip install -r requirements.txt
+ENV CHECKPOINT_DIR=/checkpoint
 
-RUN python -m nltk.downloader punkt
+RUN pip install -r requirements.txt
 
 COPY app /app
 

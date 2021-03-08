@@ -18,6 +18,8 @@ import EntailmentVisualizer from "../provenance/EntailmentVisualizer";
 import QAVisualizer from "../provenance/QAVisualizer";
 import {FaithfulnessSettings} from "../settings/FaithfulnessSettingsVisualizer";
 import {EntailmentMethod} from "../../types/entailmentmethod";
+import {QASimilarityMethod} from "../../types/qasimilaritymethod";
+import FactCCViewer from "../provenance/FactCCViewer";
 
 type FaithfulnesSettingsContextType = {
     settings: FaithfulnessSettings,
@@ -29,7 +31,9 @@ export const FaithfulnesSettingsContext = React.createContext<FaithfulnesSetting
         settings: {
             BERTScoreThreshold: 95,
             EntailmentMethod: EntailmentMethod.TopSentencesSentence,
+            EntailmentThreshold: 97,
             QAThreshold: 90,
+            QASimilarityMethod: QASimilarityMethod.F1,
         },
         setSettings: () => {}
     }
@@ -40,7 +44,9 @@ function DocumentEditor() {
     const [settings, setSettings] = useState({
         BERTScoreThreshold: 95,
         EntailmentMethod: EntailmentMethod.TopSentencesSentence,
-        QAThreshold: 90
+        EntailmentThreshold: 97,
+        QAThreshold: 90,
+        QASimilarityMethod: QASimilarityMethod.F1
     });
     const settingsContextValue = { settings: settings, setSettings: setSettings };
 
@@ -58,6 +64,7 @@ function DocumentEditor() {
     const [isSummaryWord, setIsSummaryWord] = useState(true);
     const [questionID, setQuestionID] = useState(-1);
     const [isSummaryQuestion, setIsSummaryQuestion] = useState(true);
+    const [faithfulnessMode, setFaithfulnessMode] = useState(true);
 
 
     const [inputContent, setInputContent] = useState("The tower is 324 metres (1,063 ft) tall, about the same height as an 81-storey building, and the tallest structure in Paris.\n" +
@@ -109,15 +116,30 @@ function DocumentEditor() {
             case 0:
                 return "Edit"
             case 1:
-                return "Provenance"
+                return "BERTScore"
             case 2:
-                return "Triples"
-            case 3:
-                return "BertScore"
-            case 4:
                 return "Entailment"
-            case 5:
+            case 3:
                 return "QA"
+            case 4:
+                return "FactCC"
+            default:
+                return "Unkown"
+        }
+    }
+
+    const mode2info = (mode: number) => {
+        switch (mode) {
+            case 0:
+                return "Edit the source & summary document."
+            case 1:
+                return "Evaluate documents by comparing the most similar words.\n For every word of one document, this method finds the most similar word of the other document. Words with a similarity less than the defined threshold are highlighted."
+            case 2:
+                return "Evaluate documents by checking whether the statements of a sentence can be derived from the other document. Sentences with an entailment probability less than the defined threshold are highlighted."
+            case 3:
+                return "Evaluate documents by comparing answers to automatically generated questions. This method generates questions based on one document, and answers them using both documents independently. Answers with a similarity less than the defined threshold are highlighted."
+            case 4:
+                return "Evaluate documents with the FactCC model. This method utilizes BERT to classify whether a sentence is faithful or not."
             default:
                 return "Unkown"
         }
@@ -197,17 +219,20 @@ function DocumentEditor() {
 
     return (
         <FaithfulnesSettingsContext.Provider value={settingsContextValue}>
-            <EditorWrapper numModes={6}
+            <EditorWrapper numModes={5}
                            mode2text={mode2text}
-                           numPills={2}
+                           mode2info={mode2info}
+                           numPills={0}
                            pill2text={pills2text}
                            toolbarLabels={["NER", "Triples", "Faithfulness"]}
                            toolbarOnChangeFunctions={[handleNerChange, handleTriplesChange, handleFaithfulnessChange]}
                            toolbarChecked={[showNER, showTriples, showFaithfulness]}
                            isButtonDisabled={isButtonDisabled}
                            handleButtonClick={handleButtonClick}
-                           buttonContent={<><FontAwesomeIcon icon={faPlay} /> Summarize</>}
+                           buttonContent={<><FontAwesomeIcon icon={faPlay} />&nbsp;Evaluate</>}
                            height={"500px"}
+                           faithfulnessMode={faithfulnessMode}
+                           setFaithfulnessMode={setFaithfulnessMode}
             >
                 <EditorPane pill={0}>
 
@@ -255,7 +280,7 @@ function DocumentEditor() {
                         </Split>
                     </EditorContent>
 
-                    <EditorContent mode={1}>
+                    <EditorContent mode={-1}>
                         <Split className="wrap w-100 h-100" sizes={sizes} collapsed={0} minSize={0} onDragEnd={onDragEnd}>
 
                             <div className="comp">
@@ -287,7 +312,7 @@ function DocumentEditor() {
                         </Split>
                     </EditorContent>
 
-                    <EditorContent mode={2}>
+                    <EditorContent mode={-1}>
                         <Split className="wrap w-100 h-100" sizes={sizes} collapsed={0} minSize={0} onDragEnd={onDragEnd}>
                             <div className="comp">
                                 <TripleViewer
@@ -314,7 +339,7 @@ function DocumentEditor() {
                         </Split>
                     </EditorContent>
 
-                    <EditorContent mode={3}>
+                    <EditorContent mode={1}>
                         <Split className="wrap w-100 h-100" sizes={sizes} collapsed={0} minSize={0} onDragEnd={onDragEnd}>
 
                             <div className="comp">
@@ -325,6 +350,7 @@ function DocumentEditor() {
                                                      setIsSummaryWord={setIsSummaryWord}
                                                      wordId={wordID}
                                                      setWordId={setWordId}
+                                                     faithfulnessMode={faithfulnessMode}
                                 />
                             </div>
                             <div className="comp">
@@ -335,12 +361,13 @@ function DocumentEditor() {
                                                      setIsSummaryWord={setIsSummaryWord}
                                                      wordId={wordID}
                                                      setWordId={setWordId}
+                                                     faithfulnessMode={faithfulnessMode}
                                 />
                             </div>
                         </Split>
                     </EditorContent>
 
-                    <EditorContent mode={4}>
+                    <EditorContent mode={2}>
                         <Split className="wrap w-100 h-100" sizes={sizes} collapsed={0} minSize={0} onDragEnd={onDragEnd}>
 
                             <div className="comp">
@@ -351,6 +378,7 @@ function DocumentEditor() {
                                                       setSentenceID={setSentenceID}
                                                       isSummarySentence={isSummarySentence}
                                                       setIsSummarySentence={setIsSummarySentence}
+                                                      faithfulnessMode={faithfulnessMode}
                                 />
                             </div>
                             <div className="comp">
@@ -361,12 +389,13 @@ function DocumentEditor() {
                                                       setSentenceID={setSentenceID}
                                                       isSummarySentence={isSummarySentence}
                                                       setIsSummarySentence={setIsSummarySentence}
+                                                      faithfulnessMode={faithfulnessMode}
                                 />
                             </div>
                         </Split>
                     </EditorContent>
 
-                    <EditorContent mode={5}>
+                    <EditorContent mode={3}>
                         <Split className="wrap w-100 h-100" sizes={sizes} collapsed={0} minSize={0} onDragEnd={onDragEnd}>
 
                             <div className="comp">
@@ -377,6 +406,7 @@ function DocumentEditor() {
                                               setQuestionId={setQuestionID}
                                               isSummaryQuestion={isSummaryQuestion}
                                               setIsSummaryQuestion={setIsSummaryQuestion}
+                                              faithfulnessMode={faithfulnessMode}
                                 />
                             </div>
                             <div className="comp">
@@ -387,6 +417,35 @@ function DocumentEditor() {
                                               setQuestionId={setQuestionID}
                                               isSummaryQuestion={isSummaryQuestion}
                                               setIsSummaryQuestion={setIsSummaryQuestion}
+                                              faithfulnessMode={faithfulnessMode}
+                                />
+                            </div>
+                        </Split>
+                    </EditorContent>
+
+                    <EditorContent mode={4}>
+                        <Split className="wrap w-100 h-100" sizes={sizes} collapsed={0} minSize={0} onDragEnd={onDragEnd}>
+
+                            <div className="comp">
+                                <FactCCViewer visualizeSummary={false}
+                                              inputDocument={inputDocument}
+                                              summaryDocument={summaryDocument}
+                                              sentenceID={sentenceID}
+                                              setSentenceID={setSentenceID}
+                                              isSummarySentence={isSummarySentence}
+                                              setIsSummarySentence={setIsSummarySentence}
+                                              faithfulnessMode={faithfulnessMode}
+                                />
+                            </div>
+                            <div className="comp">
+                                <FactCCViewer visualizeSummary={true}
+                                              inputDocument={inputDocument}
+                                              summaryDocument={summaryDocument}
+                                              sentenceID={sentenceID}
+                                              setSentenceID={setSentenceID}
+                                              isSummarySentence={isSummarySentence}
+                                              setIsSummarySentence={setIsSummarySentence}
+                                              faithfulnessMode={faithfulnessMode}
                                 />
                             </div>
                         </Split>
@@ -394,29 +453,29 @@ function DocumentEditor() {
 
                 </EditorPane>
 
-                <EditorPane pill={1}>
-                    <EditorContent mode={0}>
-                        <Split className="wrap w-100 h-100" sizes={sizes} collapsed={0} minSize={0} onDragEnd={onDragEnd}>
-                            <div className="comp">
-                                <p>Graph Provenance</p>
-                            </div>
-                            <div className="comp">
-                                <p>Graph Provenance</p>
-                            </div>
-                        </Split>
-                    </EditorContent>
+                {/*<EditorPane pill={1}>*/}
+                {/*    <EditorContent mode={0}>*/}
+                {/*        <Split className="wrap w-100 h-100" sizes={sizes} collapsed={0} minSize={0} onDragEnd={onDragEnd}>*/}
+                {/*            <div className="comp">*/}
+                {/*                <p>Graph Provenance</p>*/}
+                {/*            </div>*/}
+                {/*            <div className="comp">*/}
+                {/*                <p>Graph Provenance</p>*/}
+                {/*            </div>*/}
+                {/*        </Split>*/}
+                {/*    </EditorContent>*/}
 
-                    <EditorContent mode={1}>
-                        <Split className="wrap w-100 h-100" sizes={sizes} collapsed={0} minSize={0} onDragEnd={onDragEnd}>
-                            <div className="comp">
-                                <p>Graph Triples</p>
-                            </div>
-                            <div className="comp">
-                                <p>Graph Triples</p>
-                            </div>
-                        </Split>
-                    </EditorContent>
-                </EditorPane>
+                {/*    <EditorContent mode={1}>*/}
+                {/*        <Split className="wrap w-100 h-100" sizes={sizes} collapsed={0} minSize={0} onDragEnd={onDragEnd}>*/}
+                {/*            <div className="comp">*/}
+                {/*                <p>Graph Triples</p>*/}
+                {/*            </div>*/}
+                {/*            <div className="comp">*/}
+                {/*                <p>Graph Triples</p>*/}
+                {/*            </div>*/}
+                {/*        </Split>*/}
+                {/*    </EditorContent>*/}
+                {/*</EditorPane>*/}
 
             </EditorWrapper>
         </FaithfulnesSettingsContext.Provider>

@@ -5,5 +5,6 @@ export type QA = {
     other_answer_sentences: number[]
     question: string
     similarity: number
+    similarity_bert: number
     id: number
 }

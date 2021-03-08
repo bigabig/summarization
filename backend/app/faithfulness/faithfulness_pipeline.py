@@ -4,6 +4,7 @@ from app.align import align_sentences
 from app.faithfulness.bertscore import calculate_bertscore
 from app.faithfulness.entailment import calculate_entailment
 from app.faithfulness.qgqa import calculate_qa
+from app.faithfulness.factcc import calculate_factcc
 
 
 def annotate(text):
@@ -30,15 +31,19 @@ def faithfulness_pipeline(data):
     align_sentences(summary_document, source_document)
 
     # step 6: compute bertscore
-    print("calculating bertscore...")
-    calculate_bertscore(summary_document, source_document)
+    # print("calculating bertscore...")
+    # calculate_bertscore(summary_document, source_document)
 
     # step 7: compute entailment
-    print("calculating entailment...")
-    calculate_entailment(summary_document, source_document, method=1)
+    # print("calculating entailment...")
+    # calculate_entailment(summary_document, source_document, method=1)
 
     # step 8: compute qgqa
-    print("calculating qgqa...")
-    calculate_qa(summary_document, source_document)
+    # print("calculating qgqa...")
+    # calculate_qa(summary_document, source_document)
+
+    # step 8: compute qgqa
+    print("calculating factcc...")
+    calculate_factcc(summary_document, source_document)
 
     return source_document, summary_document

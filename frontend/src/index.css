@@ -246,3 +246,28 @@ ol, ul {
     vertical-align: middle;
     margin: 0rem 0.5rem 0rem 0rem;
 }
+
+/*--------------------------------------------------------------------------------------------------------------------*/
+/* STYLING FACTCC */
+/*--------------------------------------------------------------------------------------------------------------------*/
+[data-factcc] {
+    padding: 0.25em;
+    line-height: 1;
+    display: inline-block;
+    border-radius: 0.25em;
+    border: 1px solid;
+    color: #fff;
+}
+
+[data-factcc]::before {
+    box-sizing: border-box;
+    content: attr(data-factcc);
+    font-size: 0.6em;
+    line-height: 1;
+    padding: 0.35em;
+    border-radius: 0.35em;
+    text-transform: uppercase;
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0rem 0.5rem 0rem 0rem;
+}

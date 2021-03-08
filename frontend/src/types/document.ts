@@ -16,4 +16,6 @@ export type MyDocument = {
     entailment: number,
     qa: QA[],
     qa_score: number,
+    factcc_labels: number[]
+    factcc_scores: number[][]
 }

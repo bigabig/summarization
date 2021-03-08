@@ -6,6 +6,7 @@ import Tooltip from "react-bootstrap/Tooltip";
 import {colormap, highlightColorMap} from "../../helper/colorscales";
 import {FaithfulnesSettingsContext} from "../editor/DocumentEditor";
 import {QA} from "../../types/qa";
+import {QASimilarityMethod} from "../../types/qasimilaritymethod";
 
 
 type QAVisualizerProps = {
@@ -16,12 +17,12 @@ type QAVisualizerProps = {
     setQuestionId: React.Dispatch<React.SetStateAction<number>>,
     isSummaryQuestion: boolean,
     setIsSummaryQuestion: React.Dispatch<React.SetStateAction<boolean>>,
+    faithfulnessMode: boolean,
 }
 
 
-function QAVisualizer({visualizeSummary, sourceDocument, summaryDocument, questionId, setQuestionId}: QAVisualizerProps) {
+function QAVisualizer({visualizeSummary, sourceDocument, summaryDocument, questionId, setQuestionId, faithfulnessMode}: QAVisualizerProps) {
     const document = visualizeSummary ? summaryDocument : sourceDocument;
-    const faithfulnessMode = false;
     const docWithQuestions = faithfulnessMode ? summaryDocument : sourceDocument;
 
     // context
@@ -52,10 +53,21 @@ function QAVisualizer({visualizeSummary, sourceDocument, summaryDocument, questi
     }
 
     // view
+    const getSimilarity = (qa: QA) => {
+        switch (settings.QASimilarityMethod) {
+            case QASimilarityMethod.F1:
+                return qa.similarity
+            case QASimilarityMethod.BERT:
+                return qa.similarity_bert
+            default:
+                return qa.similarity
+        }
+    }
+
     const calcQuestionBackgroundColor = (qa: QA) => {
         // we selected the question
         if(questionId === qa.id) {
-            return highlightColorMap(qa.similarity)
+            return highlightColorMap(getSimilarity(qa))
 
         // in every other case
         } else {
@@ -66,11 +78,11 @@ function QAVisualizer({visualizeSummary, sourceDocument, summaryDocument, questi
     const calcAnswerBackgroundColor = (qa: QA) => {
         // we selected the question
         if(questionId === qa.id) {
-            return highlightColorMap(qa.similarity)
+            return highlightColorMap(getSimilarity(qa))
 
         // we have no question selected and the similarity is below threshold
-        } else if(questionId < 0 && qa.similarity < settings.QAThreshold / 100.0)  {
-            return colormap(qa.similarity)
+        } else if(questionId < 0 && getSimilarity(qa) < settings.QAThreshold / 100.0)  {
+            return colormap(getSimilarity(qa))
 
             // in every other case
         } else {
@@ -84,7 +96,7 @@ function QAVisualizer({visualizeSummary, sourceDocument, summaryDocument, questi
 
     // case zero: no data is available
     if(!(sourceDocument && summaryDocument && docWithQuestions && document)) {
-        content.push(<p>No data is available for this document. Please summarize the document to generate data automatically.</p>)
+        content.push(<p key={"qaerrormsg"}>No data is available for this document. Please summarize the document to generate data automatically.</p>)
 
     // case one: visualize alignments
     } else {
@@ -96,10 +108,10 @@ function QAVisualizer({visualizeSummary, sourceDocument, summaryDocument, questi
                     style={{backgroundColor: calcQuestionBackgroundColor(qa), lineHeight: "35px"}}
                 >
                     {qa.question}&nbsp;
-                    {(qa.id === questionId || (qa.similarity < settings.QAThreshold / 100.0 && questionId < 0)) && (
-                        <mark data-similarity={qa.similarity.toFixed(2)} style={{backgroundColor: calcAnswerBackgroundColor(qa)}}>{answer}</mark>
+                    {(qa.id === questionId || (getSimilarity(qa) < settings.QAThreshold / 100.0 && questionId < 0)) && (
+                        <mark data-similarity={getSimilarity(qa).toFixed(2)} style={{backgroundColor: calcAnswerBackgroundColor(qa)}}>{answer}</mark>
                     )}
-                    {!(qa.id === questionId || (qa.similarity < settings.QAThreshold / 100.0 && questionId < 0)) && (
+                    {!(qa.id === questionId || (getSimilarity(qa) < settings.QAThreshold / 100.0 && questionId < 0)) && (
                         <>{answer}</>
                     )}
                 </li>
@@ -116,7 +128,7 @@ function QAVisualizer({visualizeSummary, sourceDocument, summaryDocument, questi
             document.sentences.forEach(sentence => {
                 if (questionId >= 0 && important_sentences.indexOf(sentence.id) !== -1) {
                     output.push(
-                        sentence.text.replaceAll(answer, `<mark data-text="${answer}" data-id=${question.id} data-similarity=${question.similarity.toFixed(2)} data-question="${question.question}">${answer}</mark>`)
+                        sentence.text.replaceAll(answer, `<mark data-text="${answer}" data-id=${question.id} data-similarity=${getSimilarity(question).toFixed(2)} data-question="${question.question}">${answer}</mark>`)
                     )
                 } else {
                     output.push(sentence.text)

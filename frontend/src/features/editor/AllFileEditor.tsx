@@ -96,6 +96,7 @@ function AllFileEditor({}: AllFileEditorProps) {
     const [tripleID, setTripleID] = useState(-1);
     const [isSummaryTriple, setIsSummaryTriple] = useState(true);
     const [sizes, setSizes] = useState([50, 50])
+    const [faithfulnessMode, setFaithfulnessMode] = useState(true);
 
     // TODO: Move into project exists wrapper!
     // remote state
@@ -212,6 +213,7 @@ function AllFileEditor({}: AllFileEditorProps) {
     return (
         <EditorWrapper numModes={2}
                        mode2text={mode2text}
+                       mode2info={mode2text}
                        numPills={2}
                        pill2text={pills2text}
                        toolbarLabels={["NER", "Triples", "Faithfulness"]}
@@ -221,6 +223,8 @@ function AllFileEditor({}: AllFileEditorProps) {
                        handleButtonClick={handleSummarizeButtonClick}
                        buttonContent={<><FontAwesomeIcon icon={faPlay} /> Summarize</>}
                        height={"500px"}
+                       faithfulnessMode={faithfulnessMode}
+                       setFaithfulnessMode={setFaithfulnessMode}
         >
                 <EditorPane pill={0}>
 
