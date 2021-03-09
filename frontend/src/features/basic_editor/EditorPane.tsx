@@ -8,7 +8,7 @@ type EditorPaneProps = {
 
 function EditorPane({children, pill}: EditorPaneProps) {
     return (
-        <Tab.Pane eventKey={"pill-" + pill} className="w-100 h-100">
+        <Tab.Pane eventKey={"pill-" + pill} className="w-100 h-100" style={{position: "relative"}}>
             {children}
         </Tab.Pane>
     )

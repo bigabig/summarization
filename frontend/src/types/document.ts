@@ -1,5 +1,7 @@
 import {Sentence} from "./sentence";
 import {QA} from "./qa";
+import {Claim} from "./claim";
+import {Rouge} from "./rouge";
 
 export type MyDocument = {
     text: string,
@@ -16,6 +18,7 @@ export type MyDocument = {
     entailment: number,
     qa: QA[],
     qa_score: number,
-    factcc_labels: number[]
-    factcc_scores: number[][]
+    factcc_source: string,
+    factcc_claims: Claim[],
+    rouge: Rouge
 }

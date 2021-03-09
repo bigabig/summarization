@@ -23,7 +23,7 @@ function EntailmentScores({scores, by}: EntailmentScoresProps) {
 }
 
 
-type EntailmentVisualizer = {
+type EntailmentVisualizerProps = {
     visualizeSummary: boolean,
     inputDocument: MyDocument | null | undefined,
     summaryDocument: MyDocument | null | undefined,
@@ -35,7 +35,7 @@ type EntailmentVisualizer = {
 }
 
 
-function EntailmentVisualizer({visualizeSummary, inputDocument, summaryDocument, sentenceID, setSentenceID, isSummarySentence, setIsSummarySentence, faithfulnessMode}: EntailmentVisualizer) {
+function EntailmentVisualizer({visualizeSummary, inputDocument, summaryDocument, sentenceID, setSentenceID, isSummarySentence, setIsSummarySentence, faithfulnessMode}: EntailmentVisualizerProps) {
     const document = visualizeSummary ? summaryDocument : inputDocument;
     const otherDocument = visualizeSummary ? inputDocument : summaryDocument;
     const prefix = visualizeSummary ? 'summary-' : 'document-';
@@ -73,7 +73,7 @@ function EntailmentVisualizer({visualizeSummary, inputDocument, summaryDocument,
     const calcBackgroundColor = (index: number) => {
         let color = ""
 
-        if (document && faithfulnessMode === visualizeSummary && document.sentences[index].entailment.entailment < settings.EntailmentThreshold / 100.0) {
+        if (sentenceID < 0 && document && faithfulnessMode === visualizeSummary && document.sentences[index].entailment.entailment < settings.EntailmentThreshold / 100.0) {
             color = colormap(document.sentences[index].entailment.entailment)
         }
 
@@ -117,14 +117,16 @@ function EntailmentVisualizer({visualizeSummary, inputDocument, summaryDocument,
         document.sentences.forEach((sentence, index) => {
             content.push(
                 <OverlayTrigger
+                    key={prefix + 'overlay-' + index}
                     placement={visualizeSummary ? "left" : "right"}
                     overlay={
-                        <Tooltip id={`tooltip-top`}>
+                        <Tooltip key={prefix + 'tooltip-' + index}
+                                 id={`tooltip-top`}>
                             <EntailmentScores scores={sentence.entailment} by={sentence.entailed_by} />
                         </Tooltip>
                     }
                 >
-                    <p key={index} id={prefix + 'sentence-' + index}
+                    <p key={prefix + 'sentence-' + index} id={prefix + 'sentence-' + index}
                        className={className}
                        onClick={() => handleClick(sentence.id)}
                        data-entailment={calcHighlight(sentence.id)}

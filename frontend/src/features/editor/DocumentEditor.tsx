@@ -1,4 +1,4 @@
-import React, {SetStateAction, useEffect, useState} from "react";
+import React, {SetStateAction, useEffect, useLayoutEffect, useState} from "react";
 import axios, {AxiosResponse} from "axios";
 import {NewSummarizationResult} from "../../types/results";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
@@ -20,6 +20,9 @@ import {FaithfulnessSettings} from "../settings/FaithfulnessSettingsVisualizer";
 import {EntailmentMethod} from "../../types/entailmentmethod";
 import {QASimilarityMethod} from "../../types/qasimilaritymethod";
 import FactCCViewer from "../provenance/FactCCViewer";
+import useElementSizes from "../../helper/ElementSizes";
+import Spinner from "react-bootstrap/Spinner";
+import RougeViewer from "../provenance/RougeViewer";
 
 type FaithfulnesSettingsContextType = {
     settings: FaithfulnessSettings,
@@ -34,6 +37,7 @@ export const FaithfulnesSettingsContext = React.createContext<FaithfulnesSetting
             EntailmentThreshold: 97,
             QAThreshold: 90,
             QASimilarityMethod: QASimilarityMethod.F1,
+            FactCCThreshold: 95,
         },
         setSettings: () => {}
     }
@@ -46,11 +50,13 @@ function DocumentEditor() {
         EntailmentMethod: EntailmentMethod.TopSentencesSentence,
         EntailmentThreshold: 97,
         QAThreshold: 90,
-        QASimilarityMethod: QASimilarityMethod.F1
+        QASimilarityMethod: QASimilarityMethod.F1,
+        FactCCThreshold: 95,
     });
     const settingsContextValue = { settings: settings, setSettings: setSettings };
 
     // local state
+    const [height, mainNav, fileNav, inputNav, inputFooterNav, outputNav, outputFooterNav] = useElementSizes();
     const [showNER, setShowNER] = useState(false);
     const [showTriples, setShowTriples] = useState<boolean>(false);
     const [showFaithfulness, setShowFaithfulness] = useState(false);
@@ -60,13 +66,12 @@ function DocumentEditor() {
     const [tripleID, setTripleID] = useState(-1);
     const [isSummaryTriple, setIsSummaryTriple] = useState(true);
     const [sizes, setSizes] = useState([50, 50])
+    const [factccId, setFactccId] = useState(-1);
     const [wordID, setWordId] = useState(-1);
     const [isSummaryWord, setIsSummaryWord] = useState(true);
     const [questionID, setQuestionID] = useState(-1);
     const [isSummaryQuestion, setIsSummaryQuestion] = useState(true);
-    const [faithfulnessMode, setFaithfulnessMode] = useState(true);
-
-
+    const [faithfulnessMode, setFaithfulnessMode] = useState(true)
     const [inputContent, setInputContent] = useState("The tower is 324 metres (1,063 ft) tall, about the same height as an 81-storey building, and the tallest structure in Paris.\n" +
         "Its base is square, measuring 125 metres (410 ft) on each side.\n" +
         "During its construction, the Eiffel Tower surpassed the Washington Monument to become the tallest man-made structure in the world, a title it held for 41 years until the Chrysler Building in New York City was finished in 1930.\n" +
@@ -81,6 +86,16 @@ function DocumentEditor() {
     const [summaryDocument, setSummaryDocument] = useState<MyDocument | undefined>(undefined)
     const [inputEditorInstance, setInputEditorInstance] = useState<Ace.Editor | undefined>(undefined)
     const [documentEditorInstance, setDocumentEditorInstance] = useState<Ace.Editor | undefined>(undefined)
+
+    // effects
+    // reset selected sentence / word / phrase / question / triple, whenever the faithfulness mode changes
+    useLayoutEffect(() => {
+        // setSentenceID(-1)
+        // setWordId(-1)
+        setQuestionID(-1)
+        setTripleID(-1)
+        setFactccId(-1)
+    }, [faithfulnessMode])
 
     // actions
     const handleInputChange = (newValue: string) => {
@@ -123,6 +138,8 @@ function DocumentEditor() {
                 return "QA"
             case 4:
                 return "FactCC"
+            case 5:
+                return "ROUGE"
             default:
                 return "Unkown"
         }
@@ -140,6 +157,8 @@ function DocumentEditor() {
                 return "Evaluate documents by comparing answers to automatically generated questions. This method generates questions based on one document, and answers them using both documents independently. Answers with a similarity less than the defined threshold are highlighted."
             case 4:
                 return "Evaluate documents with the FactCC model. This method utilizes BERT to classify whether a sentence is faithful or not."
+            case 5:
+                return "View the ROUGE (1, 2, L) Scores."
             default:
                 return "Unkown"
         }
@@ -174,7 +193,7 @@ function DocumentEditor() {
         try {
             // do the post request
             let result = await axios.post<any, AxiosResponse<NewSummarizationResult>>("http://localhost:3333/align", {
-                data: {input: inputContent, summary: summaryContent},
+                data: {input: inputContent, summary: summaryContent, method: settings.EntailmentMethod},
             })
 
             // check if result contains the data we need
@@ -219,7 +238,7 @@ function DocumentEditor() {
 
     return (
         <FaithfulnesSettingsContext.Provider value={settingsContextValue}>
-            <EditorWrapper numModes={5}
+            <EditorWrapper numModes={6}
                            mode2text={mode2text}
                            mode2info={mode2info}
                            numPills={0}
@@ -230,11 +249,30 @@ function DocumentEditor() {
                            isButtonDisabled={isButtonDisabled}
                            handleButtonClick={handleButtonClick}
                            buttonContent={<><FontAwesomeIcon icon={faPlay} />&nbsp;Evaluate</>}
-                           height={"500px"}
+                           height={(height - mainNav - inputNav - inputFooterNav)+ "px"}
                            faithfulnessMode={faithfulnessMode}
                            setFaithfulnessMode={setFaithfulnessMode}
             >
                 <EditorPane pill={0}>
+
+                    {isLoading && (
+                        <div style={{
+                            inset: 0,
+                            position: "absolute",
+                            backgroundColor: "white",
+                            zIndex: 500,
+                        }}>
+                            <Spinner animation="border" variant="primary" role="status" style={{
+                                width: "10rem",
+                                height: "10rem",
+                                margin: "auto",
+                                inset: 0,
+                                position: "absolute"
+                            }}>
+                                <span className="sr-only">Loading...</span>
+                            </Spinner>
+                        </div>
+                    )}
 
                     <EditorContent mode={0}>
                         <Split className="wrap w-100 h-100" sizes={sizes} collapsed={0} minSize={0} onDragEnd={onDragEnd}>
@@ -430,10 +468,8 @@ function DocumentEditor() {
                                 <FactCCViewer visualizeSummary={false}
                                               inputDocument={inputDocument}
                                               summaryDocument={summaryDocument}
-                                              sentenceID={sentenceID}
-                                              setSentenceID={setSentenceID}
-                                              isSummarySentence={isSummarySentence}
-                                              setIsSummarySentence={setIsSummarySentence}
+                                              sentenceID={factccId}
+                                              setSentenceID={setFactccId}
                                               faithfulnessMode={faithfulnessMode}
                                 />
                             </div>
@@ -441,11 +477,29 @@ function DocumentEditor() {
                                 <FactCCViewer visualizeSummary={true}
                                               inputDocument={inputDocument}
                                               summaryDocument={summaryDocument}
-                                              sentenceID={sentenceID}
-                                              setSentenceID={setSentenceID}
-                                              isSummarySentence={isSummarySentence}
-                                              setIsSummarySentence={setIsSummarySentence}
+                                              sentenceID={factccId}
+                                              setSentenceID={setFactccId}
                                               faithfulnessMode={faithfulnessMode}
+                                />
+                            </div>
+                        </Split>
+                    </EditorContent>
+
+                    <EditorContent mode={5}>
+                        <Split className="wrap w-100 h-100" sizes={sizes} collapsed={0} minSize={0} onDragEnd={onDragEnd}>
+
+                            <div className="comp">
+                                <RougeViewer visualizeSummary={false}
+                                             inputDocument={inputDocument}
+                                             summaryDocument={summaryDocument}
+                                             faithfulnessMode={faithfulnessMode}
+                                />
+                            </div>
+                            <div className="comp">
+                                <RougeViewer visualizeSummary={true}
+                                             inputDocument={inputDocument}
+                                             summaryDocument={summaryDocument}
+                                             faithfulnessMode={faithfulnessMode}
                                 />
                             </div>
                         </Split>

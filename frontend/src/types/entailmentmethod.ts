@@ -1,5 +1,5 @@
 export enum EntailmentMethod {
-    DocumentSentence,
-    TopSentencesSentence,
     SentenceSentence,
+    TopSentencesSentence,
+    DocumentSentence,
 }

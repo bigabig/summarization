@@ -15,25 +15,32 @@ def calculate_factcc_scores(source_document, summary_document):
 
     # parse response
     json_result = response.json()
-    # 0 = CORRECT
-    # 1 = INCORRECT
     # returns
     # {
-    #     'faithful': [0, 1, 0, 1, 0, 1]
-    #     'scores': [[0.99, 0.01], [...], ...]
+    #     'source': source,
+    #     'claims': [{
+    #         'text': claim,
+    #         'faithful': labels[idx], # 0 = faithful, 1 = unfaithful!
+    #         'score_faithful': scores[idx][0],
+    #         'score_unfaithful': scores[idx][1],
+    #         'claim_start': claim_start,
+    #         'claim_end': claim_end,
+    #         'source_start': source_start,
+    #         'source_end': source_end,
+    #     }]
     # }
 
     if response.status_code == 200:
         # write the results into the corresponding documents
-        summary_document['factcc_labels'] = json_result['faithful']
-        summary_document['factcc_scores'] = json_result['scores']
+        summary_document['factcc_source'] = json_result['source']
+        summary_document['factcc_claims'] = json_result['claims']
 
     else:
         print(json_result['message'])
 
         # write some error results
-        summary_document['factcc_labels'] = []
-        summary_document['factcc_scores'] = []
+        summary_document['factcc_source'] = ""
+        summary_document['factcc_claims'] = []
 
 
 def calculate_factcc(source_document, summary_document):

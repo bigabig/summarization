@@ -1,7 +1,7 @@
 import React, {useContext, useLayoutEffect, useState} from "react";
 import {MyDocument} from "../../types/document";
 import {Sentence} from "../../types/sentence";
-import {colormap, heatmap} from "../../helper/colorscales";
+import {colormap} from "../../helper/colorscales";
 import {FaithfulnesSettingsContext} from "../editor/DocumentEditor";
 
 type BertScoreSentenceProps = {
@@ -24,7 +24,7 @@ function BertScoreSentence({sentence, className, handleClick, selfBertscores, ot
     const calcBackgroundColor = (index: number) => {
         let color = ""
 
-        if (faithfulnessMode === visualizeSummary && selfBertscores && selfBertscores[index] && selfBertscores[index][4] < threshold) {
+        if (wordId < 0 && faithfulnessMode === visualizeSummary && selfBertscores && selfBertscores[index] && selfBertscores[index][4] < threshold) {
             color = colormap(0)
         }
 
@@ -107,7 +107,7 @@ function BertScoreVisualizer({sourceDocument, summaryDocument, visualizeSummary,
     const { settings } = useContext(FaithfulnesSettingsContext)
 
     // local state
-    const [isHidden, setIsHidden] = useState(true);
+    const [isHidden, setIsHidden] = useState(wordId >= 0);
 
     // reset local state whenever the file changes
     useLayoutEffect(() => {

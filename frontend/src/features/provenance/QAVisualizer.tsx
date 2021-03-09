@@ -23,6 +23,7 @@ type QAVisualizerProps = {
 
 function QAVisualizer({visualizeSummary, sourceDocument, summaryDocument, questionId, setQuestionId, faithfulnessMode}: QAVisualizerProps) {
     const document = visualizeSummary ? summaryDocument : sourceDocument;
+    const prefix = visualizeSummary ? "summary-" : "source-"
     const docWithQuestions = faithfulnessMode ? summaryDocument : sourceDocument;
 
     // context
@@ -96,15 +97,17 @@ function QAVisualizer({visualizeSummary, sourceDocument, summaryDocument, questi
 
     // case zero: no data is available
     if(!(sourceDocument && summaryDocument && docWithQuestions && document)) {
-        content.push(<p key={"qaerrormsg"}>No data is available for this document. Please summarize the document to generate data automatically.</p>)
+        content.push(<p key={prefix + "qaerrormsg"}>No data is available for this document. Please summarize the document to generate data automatically.</p>)
 
     // case one: visualize alignments
     } else {
-        let theDoc = faithfulnessMode ? summaryDocument : sourceDocument
-        theDoc.qa.forEach(qa => {
+
+        // draw questions
+        docWithQuestions.qa.forEach(qa => {
             let answer = visualizeSummary === faithfulnessMode ? qa.this_answer : qa.other_answer
             questions.push(
-                <li onClick={() => handleClick(qa.id)}
+                <li key={prefix + "question-" + qa.id}
+                    onClick={() => handleClick(qa.id)}
                     style={{backgroundColor: calcQuestionBackgroundColor(qa), lineHeight: "35px"}}
                 >
                     {qa.question}&nbsp;
@@ -119,7 +122,9 @@ function QAVisualizer({visualizeSummary, sourceDocument, summaryDocument, questi
         })
 
         let html = ""
-        if(questionId >= 0) {
+
+        // draw sentences with highlights
+        if(questionId >= 0 && questionId < docWithQuestions.qa.length) {
             let output: string[] = []
 
             let important_sentences = visualizeSummary === faithfulnessMode ? docWithQuestions.qa[questionId].this_answer_sentences : docWithQuestions.qa[questionId].other_answer_sentences
@@ -140,7 +145,7 @@ function QAVisualizer({visualizeSummary, sourceDocument, summaryDocument, questi
             html += "</p>"
 
             content.push(
-                <>
+                <React.Fragment key={prefix + "highlightedsentences"}>
                     {parse(html, {
                         replace: domNode => {
                             if (domNode.name === 'mark') {
@@ -168,18 +173,20 @@ function QAVisualizer({visualizeSummary, sourceDocument, summaryDocument, questi
                             }
                         }
                     })}
-                </>
+                </React.Fragment>
             )
 
+        // draw sentences without highlights
         } else {
             document.sentences.forEach(sentence => {
-                content.push(<p>{sentence.text}</p>)
+                content.push(<p key={prefix + "simplesentence-" + sentence.id}>{sentence.text}</p>)
             })
         }
 
+        // draw score
         if(faithfulnessMode === visualizeSummary) {
             content.push(
-                <p key={"qascores"}>
+                <p key={prefix + "qa-scores"}>
                     QA Score: {document.qa_score.toFixed(2)}
                 </p>
             )

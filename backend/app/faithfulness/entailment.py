@@ -11,7 +11,7 @@ def calculate_entailment_score(source_document, entailed_document, method):
     obj = json.dumps({
                     'source_document': source_document,
                     'entailed_document': entailed_document,
-                    'method': 1
+                    'method': method
                 }, default=lambda o: '<not serializable>')
     obj = json.loads(obj)
 

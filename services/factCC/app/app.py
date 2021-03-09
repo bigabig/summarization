@@ -51,17 +51,23 @@ def bertscore():
         })
 
     # Evaluation
-    labels, scores  = evaluate(json_inputs, prefix="test")
-
-    # labels: ["CORRECT", "INCORRECT"]
-    print(labels)
-    print(scores)
+    # result = {
+    #     'source': source,
+    #     'claims': [{
+    #         'text': claim,
+    #         'faithful': labels[idx],
+    #         'score_faithful': scores[idx][0],
+    #         'score_unfaithful': scores[idx][1],
+    #         'claim_start': claim_start,
+    #         'claim_end': claim_end,
+    #         'source_start': source_start,
+    #         'source_end': source_end,
+    #     }]
+    # }
+    result = evaluate(json_inputs, prefix="test")
 
     response = app.response_class(
-        response=json.dumps({
-            "faithful": labels,
-            "scores": scores
-        }, default=lambda o: '<not serializable>'),
+        response=json.dumps(result, default=lambda o: '<not serializable>'),
         status=200,
         mimetype='application/json'
     )

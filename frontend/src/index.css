@@ -228,7 +228,7 @@ ol, ul {
 [data-entailment] {
     padding: 0.25em;
     line-height: 1;
-    display: inline-block;
+    display: block;
     border-radius: 0.25em;
     border: 1px solid;
     color: #fff;

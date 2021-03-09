@@ -283,6 +283,11 @@ def evaluate(json_inputs, prefix=""):
 
     nb_eval_steps = 0
     preds = None
+    ins = None
+    ext_start = None
+    ext_end = None
+    aug_start = None
+    aug_end = None
     out_label_ids = None
 
     for batch in tqdm(eval_dataloader, desc="Evaluating"):
@@ -309,16 +314,82 @@ def evaluate(json_inputs, prefix=""):
 
         if preds is None:
             preds = logits.detach().cpu()
+            ins = inputs['input_ids'].detach().cpu().tolist()
+            ext_start = ext_start_logits.detach().cpu()
+            ext_end = ext_end_logits.detach().cpu()
+            aug_start = aug_start_logits.detach().cpu()
+            aug_end = aug_end_logits.detach().cpu()
             out_label_ids = inputs['labels'].detach().cpu()
         else:
             preds = np.append(preds, logits.detach().cpu(), axis=0)
+            ins = np.append(ins, inputs['input_ids'].detach().cpu(), axis=0)
+            ext_start = np.append(ext_start, ext_start_logits.detach().cpu(), axis=0)
+            ext_end = np.append(ext_end, ext_end_logits.detach().cpu(), axis=0)
+            aug_start = np.append(aug_start, aug_start_logits.detach().cpu(), axis=0)
+            aug_end = np.append(aug_end, aug_end_logits.detach().cpu(), axis=0)
             out_label_ids = np.append(out_label_ids, inputs['labels'].detach().cpu(), axis=0)
 
+    # take the token indice with the maximum value (arg max!)
+    ext_start = ext_start.squeeze(-1).argmax(-1).tolist()
+    ext_end = ext_end.squeeze(-1).argmax(-1).tolist()
+    aug_start = aug_start.squeeze(-1).argmax(-1).tolist()
+    aug_end = aug_end.squeeze(-1).argmax(-1).tolist()
+
+    # alternative zu argmax, threshold
+    # values = ext_start.topk(k=10, dim=1).values
+    # indices = ext_start.topk(k=10, dim=1).indices
+    #
+    # # filter values > 0
+    # values = values[values > 0]
+    # indices = indices[values > 0]
+    #
+    # # filter values > 20%
+    # filter = values / values.sum(dim=0) > 0.2
+    # values = values[filter]
+    # indices = indices[filter]
+
+    # take the label with the maximum value
     labels = torch.argmax(preds, dim=1).tolist()
     scores = F.softmax(preds, dim=1).tolist()
 
+    # the model returns token indices (ext start + end, aug start + end)
+    # here, we use the indices to get the original text span
+    ext = [(tokenizer.decode(ins[claim_id][start:end], skip_special_tokens=True, clean_up_tokenization_spaces=True), start, end) for claim_id, (start, end) in enumerate(zip(ext_start, ext_end))]
+    aug = [(tokenizer.decode(ins[claim_id][start:end], skip_special_tokens=True, clean_up_tokenization_spaces=True), start, end) for claim_id, (start, end) in enumerate(zip(aug_start, aug_end))]
 
-    return labels, scores
+    # construct the result object
+    # 1. convert the original source text to tokenized source text
+    source = tokenizer.decode(tokenizer.encode(json_inputs[0]['text']))
+
+    # 2. construct the result object just consisting of the converted source text
+    result = {
+        'source': source,
+        'claims': []
+    }
+
+    # 3. for each claim (summary sentence)
+    # - convert the original claim (summary sentence) to tokenized claim text
+    # - find the character offsets for the span in the source document
+    # - find the character offsets for the span in the claim
+    # - also add label + faithfulness score to result object
+    for idx, json_input in enumerate(json_inputs):
+        claim = tokenizer.decode(tokenizer.encode(json_input['claim']))
+        claim_start = claim.lower().find(aug[idx][0])
+        claim_end = claim_start + len(aug[idx][0])
+        source_start = source.lower().find(ext[idx][0])
+        source_end = source_start + len(ext[idx][0])
+        result['claims'].append({
+            'text': claim,
+            'faithful': labels[idx] == 0,
+            'score_faithful': scores[idx][0],
+            'score_unfaithful': scores[idx][1],
+            'claim_start': claim_start,
+            'claim_end': claim_end,
+            'source_start': source_start,
+            'source_end': source_end,
+        })
+
+    return result
 
 
 def load_and_cache_examples(args, json_inputs, task, tokenizer, evaluate=False):

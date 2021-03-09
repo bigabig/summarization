@@ -20,7 +20,8 @@ export interface FaithfulnessSettings {
     QAThreshold: number,
     QASimilarityMethod: QASimilarityMethod,
     EntailmentMethod: EntailmentMethod,
-    EntailmentThreshold: number
+    EntailmentThreshold: number,
+    FactCCThreshold: number,
 }
 
 export type FaithfulnessSettingsProps = {
@@ -36,6 +37,7 @@ function FaithfulnessSettingsVisualizer({name}: FaithfulnessSettingsProps) {
     const [show, setShow] = useState(false)
     const [bertscoreThreshold, setBertscoreThreshold] = useState(95);
     const [qaThreshold, setQAThreshold] = useState(90);
+    const [factCCThreshold, setFactCCThreshold] = useState(95);
     const [entailmentThreshold, setEntailmentThreshold] = useState(97);
     const [entailmentMethod, setEntailmentMethod] = useState(EntailmentMethod.TopSentencesSentence)
     const [qaSimilarityMethod, setQaSimilarityMethod] = useState(QASimilarityMethod.F1)
@@ -45,7 +47,10 @@ function FaithfulnessSettingsVisualizer({name}: FaithfulnessSettingsProps) {
         // reset changes to the settings to global state
         setBertscoreThreshold(settings.BERTScoreThreshold)
         setQAThreshold(settings.QAThreshold)
+        setQaSimilarityMethod(settings.QASimilarityMethod)
         setEntailmentMethod(settings.EntailmentMethod)
+        setEntailmentThreshold(settings.EntailmentThreshold)
+        setFactCCThreshold(settings.FactCCThreshold)
 
         setShow(false);
     }
@@ -57,7 +62,8 @@ function FaithfulnessSettingsVisualizer({name}: FaithfulnessSettingsProps) {
             QASimilarityMethod: qaSimilarityMethod,
             EntailmentMethod: entailmentMethod,
             EntailmentThreshold: entailmentThreshold,
-            BERTScoreThreshold: bertscoreThreshold
+            BERTScoreThreshold: bertscoreThreshold,
+            FactCCThreshold: factCCThreshold,
         })
 
         setShow(false);
@@ -70,6 +76,9 @@ function FaithfulnessSettingsVisualizer({name}: FaithfulnessSettingsProps) {
     }
     const handleEntailmentThresholdChange = (newValue: number) => {
         setEntailmentThreshold(newValue)
+    }
+    const handleFactCCThresholdChange = (newValue: number) => {
+        setFactCCThreshold(newValue)
     }
 
 
@@ -85,6 +94,8 @@ function FaithfulnessSettingsVisualizer({name}: FaithfulnessSettingsProps) {
                 return "entailment"
             case 3:
                 return "qa"
+            case 4:
+                return "factcc"
             default:
                 return "bertscore"
         }
@@ -131,6 +142,9 @@ function FaithfulnessSettingsVisualizer({name}: FaithfulnessSettingsProps) {
                                     <Nav.Item>
                                         <Nav.Link eventKey="qa">QA</Nav.Link>
                                     </Nav.Item>
+                                    <Nav.Item>
+                                        <Nav.Link eventKey="factcc">FactCC</Nav.Link>
+                                    </Nav.Item>
                                 </Nav>
                             </Col>
 
@@ -161,7 +175,7 @@ function FaithfulnessSettingsVisualizer({name}: FaithfulnessSettingsProps) {
                                                 </Form.Group>
 
                                                 <Form.Group controlId="formEntailmentMethod">
-                                                    <Form.Label>Entailment Method:</Form.Label>
+                                                    <Form.Label>Entailment Method (Please re-evaluate after changing the method):</Form.Label>
                                                     <Form.Check
                                                         custom
                                                         type={"radio"}
@@ -220,6 +234,18 @@ function FaithfulnessSettingsVisualizer({name}: FaithfulnessSettingsProps) {
                                                     checked={qaSimilarityMethod === QASimilarityMethod.BERT}
                                                     onChange={() => setQaSimilarityMethod(QASimilarityMethod.BERT)}
                                                 />
+                                            </Form.Group>
+                                        </Form>
+                                    </Tab.Pane>
+
+                                    <Tab.Pane eventKey="factcc">
+                                        <Form>
+                                            <Form.Group controlId="formFactCCThreshold">
+                                                <Form.Label>Faithfulness Threshold: {factCCThreshold}%</Form.Label>
+                                                <Form.Control type="range"
+                                                              min={0}
+                                                              value={factCCThreshold}
+                                                              onChange={(event) => handleFactCCThresholdChange(parseFloat(event.target.value))}/>
                                             </Form.Group>
                                         </Form>
                                     </Tab.Pane>

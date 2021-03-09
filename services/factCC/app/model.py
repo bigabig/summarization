@@ -54,13 +54,13 @@ class BertPointer(BertPreTrainedModel):
         pooled_output = self.dropout(pooled_output)
         label_logits = self.label_classifier(pooled_output)
 
-        # extraction classifier
+        # extraction classifier (source)
         output = bert_outputs[0]
         ext_mask = ext_mask.unsqueeze(-1)
         ext_start_logits = self.ext_start_classifier(output) * ext_mask
         ext_end_logits = self.ext_end_classifier(output) * ext_mask
 
-        # augmentation classifier
+        # augmentation classifier (claim)
         output = bert_outputs[0]
         aug_mask = aug_mask.unsqueeze(-1)
         aug_start_logits = self.aug_start_classifier(output) * aug_mask
